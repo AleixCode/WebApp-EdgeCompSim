@@ -1,0 +1,23 @@
+# periods servers users
+100	5	10
+# servers
+# cpu hd bd type_server:
+# type server: dedicated = 1, volunteer good = 0.9-0.7, neither 0.6-0.4, bad = 0.3-0.1 ---> % of nb of periods
+# p.e 100*0.1 ---> E[x] = 1/10 ---> interval of time of 10 between events (swith on/off)
+8630.0	6415.0	8465.0	1.0
+7048.0	9031.0	6239.0	1.0
+9315.0	9679.0	7950.0	0.1277914722574196
+9602.0	6248.0	5259.0	0.5963301427782083
+6096.0	7374.0	6538.0	0.4905613445452127
+#users
+#arrival compu_time req_period cpu hd bd servers
+68	6	75	21	49	4	2_3_4
+89	1	99	41	79	96	0
+57	1	67	69	29	98	2_3_4
+44	16	62	51	56	39	0_1
+74	4	84	49	97	65	1
+84	19	109	41	98	22	1_2
+31	6	42	75	9	39	2_3_4
+5	17	29	8	55	54	0_1
+60	18	86	55	45	11	0_1
+75	5	82	79	77	63	0_1
