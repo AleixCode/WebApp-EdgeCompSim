@@ -1,5 +1,5 @@
 # instance time(minuts) seed_users seed_servers type_exec:(simulation 0 heuristic 1) type_placement (0 random 1 nearest_server 2 k_nearest_server 3 predictive) radio_servers (meters)
-test_exp_1	100	123456789	123456789	0	10	map_bcn.json	Eixample	0	250
+test_exp_1_a	1	123456789	123456789	0	10	map_bcn.json	Eixample	0	250
 #test_exp_1	100	123456789	123456789	0	10	map_bcn.json	Eixample	0	250
 #test_exp_2	100	123456789	123456789	0	10	map_bcn.json	Eixample	0	250
 test_exp_4	100	123456789	123456789	0	10	map_bcn.json	Eixample	0	250
