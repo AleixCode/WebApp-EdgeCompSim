@@ -22,40 +22,57 @@ def create_directories(directories):
         # Create the directory again, now empty
         os.makedirs(directory)
 
-def create_text_for_input():
-    simulation.time servers.size() 0 job_distributions.size() possible_jobs.size() \n
+def create_text_for_input(simulation, servers, job_distributions, possible_jobs):
+    result = f"{simulation.time} {len(servers)} 0 {len(job_distributions)} {len(possible_jobs)} \n" 
+    result += "map_bcn.json Eixample\n"
 
-    map_bcn.json Eixample
+    for server in servers: 
+        result += f"{server.cpu} {server.mem} {server.hdd} {server.availability} \n"
 
-    for server in servers:
-        server.cpu server.mem server.hdd server.availability \n
-
-    None \n
-
+    result += "None \n"
+    
     for job_distribution in job_distributions:
-
-        job_distribution.initial_time job_distribution.final_time job_distribution.probability \n
-
+        result += f"{job_distribution.initial_time} {job_distribution.final_time} {job_distribution.probability} \n"
+    
     for possible_job in possible_jobs:
-        possible_job.cpu possible_job.mem possible_job.hdd possible_job.probability \n
+        result += f"{possible_job.cpu} {possible_job.mem} {possible_job.hdd} {possible_job.probability} \n"
+    
+    return result
 
-def create_text_for_test():
-    simulation.name simulation.exec_time simulation.seed_users simulation.seed_servers 0 simulation.type_placement ???
+
+def create_text_for_test(simulation):
+    result = f"{simulation.name} {simulation.exec_time} {simulation.seed_users} {simulation.seed_servers} 0 10 map_bcn.json Eixample {simulation.type_placement} 250"
+    return result
+
 
 
 #Creates the input and test file needed for the execution in the
-def create_files_with_input(simulation, servers, job_distributions, possible_jobs, input_dir, output_dir, test_dir):
-    # write on input_dir with name simulation.name_input.txt
-    text_for_input = ""
-    # write on output_dir with name tests2Run.txt
-    text_for_test  = ""
+def create_files_with_input(simulation, servers, job_distributions, possible_jobs, input_dir, test_dir):
+    # Get the input text
+    text_for_input = create_text_for_input(simulation, servers, job_distributions, possible_jobs)
     
+    # Get the test text
+    text_for_test = create_text_for_test(simulation)
+    
+    # Define the input file path
+    input_file_path = f"{input_dir}/{simulation.name}_input.txt"
+    
+    # Define the test file path
+    test_file_path = f"{test_dir}/tests2Run.txt"
+    
+    # Write the input text to the input file
+    with open(input_file_path, 'w') as input_file:
+        input_file.write(text_for_input)
+    
+    # Write the test text to the test file
+    with open(test_file_path, 'w') as test_file:
+        test_file.write(text_for_test)
 
 
 # Runs the docker script which is gonna run the simulation
 def execute_docker_script(input_dir, output_dir, test_dir):
     # Define the path to your script
-    script_path = "./run_project.sh"
+    script_path = "./run_docker.sh"
     
     # Construct the command
     run_docker_command = [script_path, input_dir, output_dir, test_dir]
@@ -73,6 +90,6 @@ def run_project(simulation, servers, job_distributions, possible_jobs):
 
     create_directories([input_dir, output_dir, test_dir])
 
-    create_files_with_input(simulation, servers, job_distributions, possible_jobs, input_dir, output_dir, test_dir)
+    create_files_with_input(simulation, servers, job_distributions, possible_jobs, input_dir, test_dir)
 
     execute_docker_script(input_dir, output_dir, test_dir)

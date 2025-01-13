@@ -1,10 +1,12 @@
 import pymongo
+import os
 
 # Create a MongoDB database and two collections
 class Data:
 
     def __init__(self):
-        self.client = pymongo.MongoClient("mongodb://localhost:27017/")
+        mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+        self.client = pymongo.MongoClient(mongo_uri)
 
         if "EUA_db" in self.client.list_database_names():
             self.client.drop_database("EUA_db")
