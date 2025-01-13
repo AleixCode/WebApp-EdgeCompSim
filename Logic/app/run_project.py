@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shutil
+from Classes import Simulation, Server, JobDistribution, PossibleJob
 
 # Creates all the directories names
 def get_directories(sim_id):
@@ -22,34 +23,34 @@ def create_directories(directories):
         # Create the directory again, now empty
         os.makedirs(directory)
 
-def create_text_for_input(simulation, servers, job_distributions, possible_jobs):
-    result = f"{simulation.time} {len(servers)} 0 {len(job_distributions)} {len(possible_jobs)} \n" 
+def create_text_for_input(simulation):
+    result = f"{simulation.time} {len(simulation.servers)} 0 {len(simulation.job_distributions)} {len(simulation.possible_jobs)} \n" 
     result += "map_bcn.json Eixample\n"
 
-    for server in servers: 
+    for server in simulation.servers: 
         result += f"{server.cpu} {server.mem} {server.hdd} {server.availability} \n"
 
     result += "None \n"
     
-    for job_distribution in job_distributions:
+    for job_distribution in simulation.job_distributions:
         result += f"{job_distribution.initial_time} {job_distribution.final_time} {job_distribution.probability} \n"
     
-    for possible_job in possible_jobs:
+    for possible_job in simulation.possible_jobs:
         result += f"{possible_job.cpu} {possible_job.mem} {possible_job.hdd} {possible_job.probability} \n"
     
     return result
 
 
 def create_text_for_test(simulation):
-    result = f"{simulation.name} {simulation.exec_time} {simulation.seed_users} {simulation.seed_servers} 0 10 map_bcn.json Eixample {simulation.type_placement} 250"
+    result = f"{simulation.name} {simulation.exec_time} {simulation.seed_users} {simulation.seed_servers} {simulation.type_exec} 0 10 map_bcn.json Eixample {simulation.type_placement} 250"
     return result
 
 
 
 #Creates the input and test file needed for the execution in the
-def create_files_with_input(simulation, servers, job_distributions, possible_jobs, input_dir, test_dir):
+def create_files_with_input(simulation, input_dir, test_dir):
     # Get the input text
-    text_for_input = create_text_for_input(simulation, servers, job_distributions, possible_jobs)
+    text_for_input = create_text_for_input(simulation)
     
     # Get the test text
     text_for_test = create_text_for_test(simulation)
@@ -84,12 +85,12 @@ def execute_docker_script(input_dir, output_dir, test_dir):
         raise
 
 # Pre: Dona per suposat que tots els inputs son correctes i no fa cap comprobacio
-def run_project(simulation, servers, job_distributions, possible_jobs):
+def run_project(simulation: Simulation):
 
     input_dir, output_dir, test_dir = get_directories(simulation.id)
 
     create_directories([input_dir, output_dir, test_dir])
 
-    create_files_with_input(simulation, servers, job_distributions, possible_jobs, input_dir, test_dir)
+    create_files_with_input(simulation, input_dir, test_dir)
 
     execute_docker_script(input_dir, output_dir, test_dir)
