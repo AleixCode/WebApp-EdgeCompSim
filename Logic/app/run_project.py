@@ -79,7 +79,7 @@ def execute_docker_script(input_dir, output_dir, test_dir):
     run_docker_command = [script_path, input_dir, output_dir, test_dir]
     try:
         # Run the script
-        subprocess.run(run_docker_command, check=True)
+        subprocess.run(run_docker_command, check=True, stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         print("Error while executing the script:", e.stderr)
         raise

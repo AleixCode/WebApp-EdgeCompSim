@@ -45,7 +45,7 @@ class Simulation:
         self.seed_servers: int = seed_servers
         self.type_exec: int = type_exec
         self.type_placement: int = type_placement
-        self.possible_jobs: List[PossibleJob] = possible_jobs,
-        self.job_distributions: List[JobDistribution] = job_distributions,
-        self.servers: List[Server] = servers,
+        self.possible_jobs: List[PossibleJob] = possible_jobs
+        self.job_distributions: List[JobDistribution] = job_distributions
+        self.servers: List[Server] = servers
         
