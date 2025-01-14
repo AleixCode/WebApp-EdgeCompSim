@@ -49,3 +49,39 @@ class Simulation:
         self.job_distributions: List[JobDistribution] = job_distributions
         self.servers: List[Server] = servers
         
+# Function to create Simulation from JSON
+def create_simulation_from_json(data: dict) -> Simulation:
+    # Create PossibleJob instances from JSON data
+    possible_jobs = [
+        PossibleJob(cpu=job['cpu'], mem=job['mem'], hdd=job['hdd'], probability=job['probability'])
+        for job in data.get('possible_jobs', [])
+    ]
+    
+    # Create JobDistribution instances from JSON data
+    job_distributions = [
+        JobDistribution(initial_time=dist['initial_time'], final_time=dist['final_time'], probability=dist['probability'])
+        for dist in data.get('job_distributions', [])
+    ]
+    
+    # Create Server instances from JSON data
+    servers = [
+        Server(cpu=server['cpu'], mem=server['mem'], hdd=server['hdd'], availability=server['availability'])
+        for server in data.get('servers', [])
+    ]
+    
+    # Create the Simulation instance
+    simulation = Simulation(
+        sim_id=data['sim_id'],
+        name=data['name'],
+        time=data['time'],
+        exec_time=data['exec_time'],
+        seed_users=data['seed_users'],
+        seed_servers=data['seed_servers'],
+        type_exec=data['type_exec'],
+        type_placement=data['type_placement'],
+        possible_jobs=possible_jobs,
+        job_distributions=job_distributions,
+        servers=servers
+    )
+    
+    return simulation
