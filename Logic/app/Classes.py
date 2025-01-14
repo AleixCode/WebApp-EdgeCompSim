@@ -34,7 +34,7 @@ class Simulation:
         type_exec: int,
         type_placement: int,
         possible_jobs: List[PossibleJob],
-        jobs_distribution: List[JobDistribution],
+        job_distributions: List[JobDistribution],
         servers: List[Server],
     ):
         self.id: int = sim_id
@@ -46,6 +46,6 @@ class Simulation:
         self.type_exec: int = type_exec
         self.type_placement: int = type_placement
         self.possible_jobs: List[PossibleJob] = possible_jobs,
-        self.jobs_distribution: List[JobDistribution] = jobs_distribution,
+        self.job_distributions: List[JobDistribution] = job_distributions,
         self.servers: List[Server] = servers,
         
