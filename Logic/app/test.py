@@ -1,5 +1,5 @@
-from Classes import Simulation, Server, JobDistribution, PossibleJob
-from run_project import run_project
+from .Classes import Simulation, Server, JobDistribution, PossibleJob
+from .run_project import run_project
 
 # Create instances of the classes
 possible_jobs = [

@@ -1,7 +1,7 @@
 import os
 import subprocess
 import shutil
-from Classes import Simulation, Server, JobDistribution, PossibleJob
+from .Classes import Simulation, Server, JobDistribution, PossibleJob
 
 # Creates all the directories names
 def get_directories(sim_id):

@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
-from app.tasks import run_simulation
-from Classes import Simulation, create_simulation_from_json
+from .tasks import run_simulation
+from .Classes import Simulation, create_simulation_from_json
 
 
 def init_routes(app):

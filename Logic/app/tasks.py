@@ -1,5 +1,5 @@
 import requests
-from run_project import Simulation, run_project
+from .run_project import Simulation, run_project
 
 def init_tasks(celery):
     @celery.task
