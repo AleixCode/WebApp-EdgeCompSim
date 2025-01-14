@@ -27,7 +27,7 @@ simulation = Simulation(
     type_exec=1,
     type_placement=1,
     possible_jobs=possible_jobs,
-    jobs_distribution=job_distributions,
+    job_distributions=job_distributions,
     servers=servers,
 )
 
