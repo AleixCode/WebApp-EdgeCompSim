@@ -1,5 +1,6 @@
 from flask import Flask
 from celery import Celery
+from routes import init_routes
 
 def create_celery_app(app=None):
     app = app or Flask(__name__)
@@ -13,4 +14,5 @@ def create_celery_app(app=None):
 def create_app():
     app = Flask(__name__)
     celery = create_celery_app(app)
+    init_routes(app)
     return app, celery
