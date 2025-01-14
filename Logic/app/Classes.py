@@ -47,5 +47,5 @@ class Simulation:
         self.type_placement: int = type_placement
         self.possible_jobs: List[PossibleJob] = possible_jobs,
         self.jobs_distribution: List[JobDistribution] = jobs_distribution,
-        self.servers: List[Server] = jobs_distribution,
+        self.servers: List[Server] = servers,
         
