@@ -5,7 +5,7 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy the project code into the container
-COPY ../../GEN_EUA_TS .
+COPY GEN_EUA_TS .
 
 # Install dependencies
 RUN pip install -r requirements.txt

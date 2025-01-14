@@ -71,12 +71,12 @@ def create_files_with_input(simulation, input_dir, test_dir):
 
 
 # Runs the docker script which is gonna run the simulation
-def execute_docker_script(input_dir, output_dir, test_dir):
+def execute_docker_script(sim_id, input_dir, output_dir, test_dir):
     # Define the path to your script
     script_path = "./run_docker.sh"
     
     # Construct the command
-    run_docker_command = [script_path, input_dir, output_dir, test_dir]
+    run_docker_command = [script_path, input_dir, output_dir, test_dir, sim_id]
     try:
         # Run the script
         subprocess.run(run_docker_command, check=True, stderr=subprocess.PIPE)
@@ -93,4 +93,4 @@ def run_project(simulation: Simulation):
 
     create_files_with_input(simulation, input_dir, test_dir)
 
-    execute_docker_script(input_dir, output_dir, test_dir)
+    execute_docker_script(simulation.id, input_dir, output_dir, test_dir)
