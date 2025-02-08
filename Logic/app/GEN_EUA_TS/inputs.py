@@ -59,7 +59,7 @@ def readInputs(instance,test):
             if '\n' in line:
                 line = line[:-1]
             if line[0] != '#' and line[0] != '':
-                tokens = line.split('\t')
+                tokens = line.split(' ')
                 # print(tokens,stage)
                 if stage == 0:
                     nPeriods = int(tokens[0])
@@ -120,6 +120,8 @@ def readInputs(instance,test):
                     if n_type_users-1==0:
                         stage += 1
                     n_type_users -= 1
+        
+        print("HI")
 
         # Create a data structure for the placement
         # Geographic collocation of server such that can get the nearest server

@@ -118,6 +118,7 @@ def gen_users(model,max_duration,l_users,district,input):
         for indx,interval in enumerate(input.band_intervals):
             if t in interval:
                 return input.users_lambdas[indx]
+        return input.users_lambdas[-1]
 
     while True:
 
@@ -155,5 +156,6 @@ def gen_users(model,max_duration,l_users,district,input):
         l_users.append(user)
 
         #exp = random.expovariate(lambda_value)
+        print(lambda_value)
         exp = input.test.behavour.get_random(user).expovariate(lambda_value)
         yield model.env.timeout(exp)

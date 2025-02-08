@@ -77,7 +77,7 @@ class TestManager():
                 if line[0] != '#' and line[0] != '\n':
                     if '\n' in line:
                         line = line[:-1]
-                    tokens = line.split('\t')
+                    tokens = line.split(' ')
                     instance = tokens[0]
                     time = int(tokens[1])
                     seed_users = int(tokens[2])

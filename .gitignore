@@ -3,3 +3,26 @@ GEN_EUA_TS/images/*
 GEN_EUA_TS/notebooks/*
 GEN_EUA_TS.zip
 GEN_EUA_TS/__pycache__/*
+
+# Ignore PyCharm project files anywhere in the repo
+.idea/
+
+# Ignore VSCode project files anywhere in the repo
+.vscode/
+
+# Ignore Python bytecode and cache files anywhere in the repo
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment directories anywhere in the repo
+venv/
+env/
+.venv/
+
+# Ignore virtual environments with any name in subdirectories
+**/venv/
+**/env/
+**/.venv/
+

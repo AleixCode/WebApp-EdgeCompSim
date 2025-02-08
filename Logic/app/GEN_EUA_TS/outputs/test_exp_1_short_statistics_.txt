@@ -1,2 +1,0 @@
-total jobs;total completed;total expired
-2568;0;2568

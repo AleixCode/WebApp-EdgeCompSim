@@ -1,23 +1,29 @@
-from app import create_app
+import multiprocessing
 import subprocess
-import sys
-
-app, celery = create_app()
-
-def run_celery_worker(worker_count):
-    for _ in range(worker_count):
-        subprocess.Popen(['celery', '-A', 'app.celery', 'worker', '--loglevel=info'])
-
-def run_application():
-    app.run(debug=True)
-
 
 if __name__ == "__main__":
-    # Ask the user how many workers they want to run
-    worker_count = int(input("Enter the number of Celery workers to start: "))
+    from app import create_app  # Import here to prevent multiple executions
 
-    # Start the requested number of Celery workers
-    run_celery_worker(worker_count)
+    app = create_app()
 
-    # Run the Flask application
+    def run_celery_worker():
+        """Start Celery worker with concurrency = CPU cores - 1"""
+        cpu_count = max(1, multiprocessing.cpu_count() - 1)
+        print(f"Starting Celery worker with concurrency={cpu_count}")
+
+        subprocess.Popen([
+            'celery', '-A', 'app.celery_instance.celery', 'worker',
+            '--loglevel=info', f'--concurrency={cpu_count}'
+        ])
+
+    def run_application():
+        """Start Flask application"""
+        app.run(debug=True, use_reloader=False)
+
+    # Start Celery worker
+    run_celery_worker()
+
+    # Start Flask app
+    print("\n\n\nRunning API Service")
     run_application()
+
