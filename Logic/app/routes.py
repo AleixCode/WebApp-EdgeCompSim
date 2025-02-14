@@ -1,9 +1,11 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file, abort
 from .tasks import run_project
 from .Classes import Simulation, create_simulation_from_json
+from .utils import get_directories
+import os
 
 
-def init_routes(app):
+def init_routes(app, mongo):
     @app.route('/simulate', methods=['POST'])
     def simulate():
         # Get the incoming JSON data
@@ -24,5 +26,27 @@ def init_routes(app):
     @app.route('/', methods=['GET'])
     def home():
         return jsonify({"works": 12}), 202  # HTTP 202 Accepted
+
+
+    @app.route("/download")
+    def download_file():
+        filename = request.args.get("filename")
+        sim_id = request.args.get("sim_id")
+         
+        # Construct correct path
+        file_path = os.path.abspath(f"./app/Simulations/{sim_id}/outputs/{filename}")
+
+        # Check if file exists before sending
+        if not os.path.exists(file_path):
+            abort(404, description="File not found")
+
+        return send_file(file_path, as_attachment=True)
+
     
-    
+    @app.route("/testdb")
+    def test_db():
+        """Test the MongoDB connection using the MongoDB class function"""
+        if mongo.test_connection():
+            return jsonify({"status": "✅ MongoDB Connection: OK"}), 200
+        else:
+            return jsonify({"status": "❌ MongoDB Connection: FAILED"}), 500

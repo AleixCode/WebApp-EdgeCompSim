@@ -2,14 +2,7 @@ import os
 import subprocess
 import shutil
 from .Classes import Simulation, Server, JobDistribution, PossibleJob
-
-# Creates all the directories names
-def get_directories(sim_id):
-    base_dir = f"./app/Simulations/{sim_id}"
-    input_dir = os.path.join(base_dir, "inputs")
-    output_dir = os.path.join(base_dir, "outputs")
-    test_dir = os.path.join(base_dir, "tests")
-    return base_dir, input_dir, output_dir, test_dir
+from .utils import get_directories
 
 # Gets the input that the simulation needs, creates the directory inside the Simulations with the id, 
 # then creates the directories input output and test
