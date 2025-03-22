@@ -28,7 +28,7 @@ def init_routes(app, mongo):
         return jsonify({"works": 12}), 202  # HTTP 202 Accepted
 
 
-    @app.route("/download")
+    @app.route("/download", methods=['GET'])
     def download_file():
         filename = request.args.get("filename")
         sim_id = request.args.get("sim_id")
@@ -43,7 +43,7 @@ def init_routes(app, mongo):
         return send_file(file_path, as_attachment=True)
 
     
-    @app.route("/testdb")
+    @app.route("/testdb", methods=['GET'])
     def test_db():
         """Test the MongoDB connection using the MongoDB class function"""
         if mongo.test_connection():
