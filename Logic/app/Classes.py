@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 class Server:
     def __init__(self, cpu: int, mem: int, hdd: int, availability: str):
@@ -49,7 +49,6 @@ class PossibleJob:
 class Simulation:
     def __init__(
         self,
-        sim_id: int,
         name: str,
         time: int,
         exec_time: int,
@@ -60,8 +59,9 @@ class Simulation:
         possible_jobs: List[PossibleJob],
         job_distributions: List[JobDistribution],
         servers: List[Server],
+        sim_id: Optional[str] = None  # id is optional
     ):
-        self.id: int = sim_id
+        self.id: Optional[str] = sim_id
         self.name: str = name
         self.time: int = time
         self.exec_time: int = exec_time
@@ -74,8 +74,7 @@ class Simulation:
         self.servers: List[Server] = servers
 
     def to_dict(self):
-        return {
-            "id": self.id,
+        data = {
             "name": self.name,
             "time": self.time,
             "exec_time": self.exec_time,
@@ -87,31 +86,29 @@ class Simulation:
             "job_distributions": [dist.to_dict() for dist in self.job_distributions],
             "servers": [server.to_dict() for server in self.servers]
         }
+        if self.id is not None:
+            data["id"] = self.id
+        return data
 
-        
-# Function to create Simulation from JSON
+# Function to create Simulation from JSON (for new simulations, id is not expected)
 def create_simulation_from_json(data: dict) -> Simulation:
-    # Create PossibleJob instances from JSON data
     possible_jobs = [
         PossibleJob(cpu=job['cpu'], mem=job['mem'], hdd=job['hdd'], probability=job['probability'])
         for job in data.get('possible_jobs', [])
     ]
     
-    # Create JobDistribution instances from JSON data
     job_distributions = [
         JobDistribution(initial_time=dist['initial_time'], final_time=dist['final_time'], probability=dist['probability'])
         for dist in data.get('job_distributions', [])
     ]
     
-    # Create Server instances from JSON data
     servers = [
         Server(cpu=server['cpu'], mem=server['mem'], hdd=server['hdd'], availability=server['availability'])
         for server in data.get('servers', [])
     ]
     
-    # Create the Simulation instance
+    # We do not require an id in the input JSON for new simulations.
     simulation = Simulation(
-        sim_id=data['sim_id'],
         name=data['name'],
         time=data['time'],
         exec_time=data['exec_time'],
@@ -131,7 +128,6 @@ def from_dict(data: dict) -> Simulation:
     job_distributions = [JobDistribution(**dist) for dist in data["job_distributions"]]
     servers = [Server(**server) for server in data["servers"]]
     return Simulation(
-        sim_id=data["id"],
         name=data["name"],
         time=data["time"],
         exec_time=data["exec_time"],
@@ -141,5 +137,6 @@ def from_dict(data: dict) -> Simulation:
         type_placement=data["type_placement"],
         possible_jobs=possible_jobs,
         job_distributions=job_distributions,
-        servers=servers
+        servers=servers,
+        sim_id=data.get("id")  # if id is present, include it
     )
