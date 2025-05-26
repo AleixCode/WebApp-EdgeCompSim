@@ -69,7 +69,7 @@ export default function JobDistributionsForm({ items, onAdd }: Props) {
         />
       </IonItem>
       <IonItem>
-        <IonLabel position="stacked">Probability (0–1)</IonLabel>
+        <IonLabel position="stacked">Probability (0-1)</IonLabel>
         <IonInput
           type="number"
           value={dist.probability}

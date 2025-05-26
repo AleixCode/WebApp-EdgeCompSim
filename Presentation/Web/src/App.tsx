@@ -1,29 +1,46 @@
 // src/App.tsx
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { IonApp, IonSplitPane, IonRouterOutlet } from '@ionic/react';
+import { IonReactRouter } from '@ionic/react-router';
+import { Route } from 'react-router-dom';
 import Nav from './components/Nav';
-import Layout from './components/Layout';
 import routes from './config/routes';
-import Header from './components/Header';
+import NotFoundPage from './pages/NotFound';
+import PrivateRoute from './utils/PrivateRoute';
 
-const App: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
+const App: React.FC = () => (
+  <IonApp>
+    <IonReactRouter>  {/* Sets up Ionic React routing */}
+      <IonSplitPane contentId="main-content">
+        <Nav />  {/* Side menu */}
 
-  return (
-    <Router>
-        <Nav collapsed={collapsed} setCollapsed={setCollapsed} />
-        <Header/>
-        <Layout collapsed={collapsed}>
-          <Routes>
-            {routes.map((route, index) =>
-              route.element ? (
-                <Route key={index} path={route.path} element={route.element} />
-              ) : null
-            )}
-          </Routes>
-        </Layout>
-    </Router>
-  );
-};
+        <IonRouterOutlet id="main-content">
+  {routes.map(route =>
+    route.isAuth ? (
+      <PrivateRoute
+        key={route.path}
+        exact
+        path={route.path}
+        component={route.component}    // ← here
+      />
+    ) : (
+      <Route
+        key={route.path}
+        exact
+        path={route.path}
+        component={route.component}    // ← and here
+      />
+    )
+  )}
+  {/* 404 fallback */}
+  <Route path="*" component={NotFoundPage} />
+</IonRouterOutlet>
+
+
+      </IonSplitPane>
+    </IonReactRouter>
+  </IonApp>
+);
 
 export default App;
+

@@ -1,15 +1,20 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import Tab, { TabProps } from '@mui/material/Tab';
+import { IonTabButton, IonLabel } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
 
-interface LinkTabProps extends TabProps {
+interface LinkTabProps {
   label: string;
   to: string;
 }
 
-// Using React Router's Link means you no longer need to prevent default behavior manually.
-const LinkTab: React.FC<LinkTabProps> = (props) => {
-  return <Tab component={RouterLink} {...props} />;
+const LinkTab: React.FC<LinkTabProps> = ({ label, to }) => {
+  const history = useHistory();
+
+  return (
+    <IonTabButton onClick={() => history.push(to)}>
+      <IonLabel>{label}</IonLabel>
+    </IonTabButton>
+  );
 };
 
 export default LinkTab;

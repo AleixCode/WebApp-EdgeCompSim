@@ -1,30 +1,20 @@
 // src/components/Layout.tsx
 import React from 'react';
-import { Box } from '@mui/material';
-import { drawerWidth, collapsedWidth, contentTransition, headerHeight } from '../config/layout';
+import Header from './Header';
+import { IonPage, IonContent } from '@ionic/react';
 
 interface LayoutProps {
-  collapsed: boolean;
+  title: string;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ collapsed, children }) => {
-  return (
-    <Box
-      component="main"
-      sx={{
-        marginLeft: collapsed ? `${collapsedWidth}px` : `${drawerWidth}px`,
-        marginTop: headerHeight, // leave room for fixed header
-        paddingLeft: 4,
-        transition: contentTransition,
-        display: 'block', // ❗ make sure it's not flex-centered
-        height: `calc(100vh - ${headerHeight})`,
-        overflow: 'auto',
-      }}
-    >
+const Layout: React.FC<LayoutProps> = ({ title, children }) => (
+  <IonPage>
+    <Header title={title} />
+    <IonContent className="ion-padding">
       {children}
-    </Box>
-  );
-};
+    </IonContent>
+  </IonPage>
+);
 
 export default Layout;

@@ -1,12 +1,5 @@
-import * as React from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Button,
-} from '@mui/joy';
+import React from 'react';
+import { IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonButton } from '@ionic/react';
 
 type Status = 'pending' | 'running' | 'finished';
 
@@ -28,65 +21,22 @@ export default function SimulationsCard({
   status,
 }: SimulationsCardProps) {
   return (
-    <Card
-      variant="soft"
-      sx={{
-        width: 300,
-        backgroundColor: '#f9f9fb',
-        borderRadius: '12px',
-        boxShadow: 'sm',
-        transition: 'all 0.2s ease-in-out',
-        '&:hover': {
-          boxShadow: 'md',
-          transform: 'translateY(-2px)',
-        },
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        border: '1px solid #e0e0e0',
-        p: 1.5,
-      }}
-    >
-      <CardContent sx={{ flex: 1, p: 0 }}>
-        <Typography level="title-sm" fontWeight="lg" mb={0.75}>
-          {title}
-        </Typography>
+    <IonCard style={{ width: 300, backgroundColor: '#f9f9fb', borderRadius: '12px', boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)' }}>
+      <IonCardHeader>
+        <IonCardTitle>{title}</IonCardTitle>
+        <IonCardSubtitle style={{ fontWeight: 600, color: statusColorMap[status] }}>
+          Status: {status.charAt(0).toUpperCase() + status.slice(1)}
+        </IonCardSubtitle>
+      </IonCardHeader>
 
-        <Box sx={{ mb: 0.5 }}>
-          <Typography fontWeight="md" level="body-xs">
-            Status:{' '}
-            <Box
-              component="span"
-              sx={{
-                fontWeight: 600,
-                color: statusColorMap[status],
-              }}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Box>
-          </Typography>
-        </Box>
+      <IonCardContent>
+        {description}
+      </IonCardContent>
 
-        <Typography fontWeight="sm" level="body-sm" color="neutral">
-          {description}
-        </Typography>
-      </CardContent>
-
-      <CardActions
-        sx={{
-          justifyContent: 'flex-end',
-          gap: 0.75,
-          mt: 1.5,
-          p: 0,
-        }}
-      >
-        <Button size="sm" variant="plain" color="neutral">
-          View
-        </Button>
-        <Button size="sm" variant="solid" color="primary">
-          Edit
-        </Button>
-      </CardActions>
-    </Card>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '8px' }}>
+        <IonButton fill="outline" color="medium">View</IonButton>
+        <IonButton color="primary">Edit</IonButton>
+      </div>
+    </IonCard>
   );
 }

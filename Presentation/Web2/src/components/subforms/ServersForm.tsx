@@ -18,20 +18,21 @@ interface Props {
 }
 
 export default function ServersForm({ items, onAdd }: Props) {
-  const [srv, setSrv] = useState<Server>({
-    cpu: 0,
-    mem: 0,
-    hdd: 0,
-    availability: '',
-  });
+  const initialState: Server = { cpu: 0, mem: 0, hdd: 0, availability: '' };
+  const [srv, setSrv] = useState<Server>(initialState);
   const [error, setError] = useState('');
+
+  const parseNumber = (value: string | null | undefined): number => {
+    const num = parseFloat(value || '0');
+    return isNaN(num) ? 0 : num;
+  };
 
   const validate = (): string => {
     if (srv.cpu <= 0 || srv.mem <= 0 || srv.hdd <= 0) {
-      return 'CPU, Mem, and HDD must be > 0';
+      return 'CPU, Memory, and HDD must be greater than 0.';
     }
     if (!srv.availability) {
-      return 'Availability must be selected';
+      return 'Please select an availability level.';
     }
     return '';
   };
@@ -40,11 +41,12 @@ export default function ServersForm({ items, onAdd }: Props) {
     const err = validate();
     if (err) {
       setError(err);
-    } else {
-      onAdd(srv);
-      setSrv({ cpu: 0, mem: 0, hdd: 0, availability: '' });
-      setError('');
+      return;
     }
+
+    onAdd(srv);
+    setSrv(initialState);
+    setError('');
   };
 
   const isValid = validate() === '';
@@ -60,40 +62,53 @@ export default function ServersForm({ items, onAdd }: Props) {
         <IonInput
           type="number"
           value={srv.cpu}
-          onIonChange={e => setSrv({ ...srv, cpu: Number(e.detail.value) })}
+          onIonInput={e =>
+            setSrv({ ...srv, cpu: parseNumber((e.target as HTMLInputElement).value) })
+          }
+          placeholder="Enter CPU"
         />
       </IonItem>
+
       <IonItem>
         <IonLabel position="stacked">Memory</IonLabel>
         <IonInput
           type="number"
           value={srv.mem}
-          onIonChange={e => setSrv({ ...srv, mem: Number(e.detail.value) })}
+          onIonInput={e =>
+            setSrv({ ...srv, mem: parseNumber((e.target as HTMLInputElement).value) })
+          }
+          placeholder="Enter Memory"
         />
       </IonItem>
+
       <IonItem>
         <IonLabel position="stacked">HDD</IonLabel>
         <IonInput
           type="number"
           value={srv.hdd}
-          onIonChange={e => setSrv({ ...srv, hdd: Number(e.detail.value) })}
+          onIonInput={e =>
+            setSrv({ ...srv, hdd: parseNumber((e.target as HTMLInputElement).value) })
+          }
+          placeholder="Enter HDD"
         />
       </IonItem>
+
       <IonItem>
-        <IonLabel>Availability</IonLabel>
+        <IonLabel position="stacked">Availability</IonLabel>
         <IonSelect
           value={srv.availability}
-          onIonChange={e => setSrv({ ...srv, availability: e.detail.value! })}
+          placeholder="Select Availability"
+          onIonChange={e => setSrv({ ...srv, availability: e.detail.value })}
         >
-          <IonSelectOption value="High">High</IonSelectOption>
-          <IonSelectOption value="Medium">Medium</IonSelectOption>
-          <IonSelectOption value="Low">Low</IonSelectOption>
+          <IonSelectOption value="High">High Availability</IonSelectOption>
+          <IonSelectOption value="Medium">Medium Availability</IonSelectOption>
+          <IonSelectOption value="Low">Low Availability</IonSelectOption>
         </IonSelect>
       </IonItem>
 
       {error && (
         <IonText color="danger">
-          <p style={{ margin: '4px 16px' }}>{error}</p>
+          <p style={{ margin: '8px 16px' }}>{error}</p>
         </IonText>
       )}
 
@@ -101,13 +116,20 @@ export default function ServersForm({ items, onAdd }: Props) {
         Add Server
       </IonButton>
 
-      {items.map((s, i) => (
-        <IonItem key={i}>
-          <IonLabel>
-            CPU:{s.cpu}, MEM:{s.mem}, HDD:{s.hdd}, Avail:{s.availability}
-          </IonLabel>
-        </IonItem>
-      ))}
+      {items.length > 0 && (
+        <>
+          <IonListHeader>
+            <IonLabel>Server List</IonLabel>
+          </IonListHeader>
+          {items.map((s, i) => (
+            <IonItem key={i}>
+              <IonLabel>
+                CPU: {s.cpu}, MEM: {s.mem}, HDD: {s.hdd}, Availability: {s.availability}
+              </IonLabel>
+            </IonItem>
+          ))}
+        </>
+      )}
     </IonList>
   );
 }

@@ -12,7 +12,7 @@ def create_app():
     app = Flask(__name__)
 
     # Cors Set Up
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
     
     # Flask configuration
     app.config.from_object(Config)

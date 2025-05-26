@@ -1,4 +1,3 @@
-// src/components/CreateSimulation.tsx
 import React, { useState } from 'react';
 import {
   IonCard,
@@ -10,12 +9,16 @@ import {
   IonSegment,
   IonSegmentButton,
   IonLabel,
+  IonText,
+  IonTitle,
+  IonItemDivider
 } from '@ionic/react';
 
 import GeneralForm from './subforms/GeneralForm';
 import PossibleJobsForm from './subforms/PossibleJobsForm';
 import JobDistributionsForm from './subforms/JobDistributionsForm';
 import ServersForm from './subforms/ServersForm';
+
 import type {
   CreateSimulationPayload,
   SimulationData,
@@ -52,12 +55,6 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const triggerCreate = () => {
-    if (formData.name && formData.time > 0 && formData.exec_time > 0) {
-      onCreate({ formData, possibleJobs, jobDistributions, servers });
-    }
-  };
-
   const canSubmit =
     formData.name !== '' &&
     formData.time > 0 &&
@@ -72,17 +69,18 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
         <IonToolbar>
           <IonCardTitle>Create Simulation</IonCardTitle>
         </IonToolbar>
+
         <IonToolbar>
           <IonSegment
             value={tab}
             onIonChange={e => setTab(e.detail.value as any)}
-            scrollable={true}
+            scrollable
           >
             <IonSegmentButton value="general">
               <IonLabel>General</IonLabel>
             </IonSegmentButton>
             <IonSegmentButton value="jobs">
-              <IonLabel>Possible Jobs</IonLabel>
+              <IonLabel>Jobs</IonLabel>
             </IonSegmentButton>
             <IonSegmentButton value="dist">
               <IonLabel>Distributions</IonLabel>
@@ -95,41 +93,56 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
       </IonCardHeader>
 
       <IonCardContent>
-        {tab === 'general' && (
-          <GeneralForm formData={formData} onChange={handleFormChange} />
-        )}
-        {tab === 'jobs' && (
-          <PossibleJobsForm
-            items={possibleJobs}
-            onAdd={item => setPossibleJobs([...possibleJobs, item])}
-          />
-        )}
-        {tab === 'dist' && (
-          <JobDistributionsForm
-            items={jobDistributions}
-            onAdd={item => setJobDistributions([...jobDistributions, item])}
-          />
-        )}
-        {tab === 'servers' && (
-          <ServersForm
-            items={servers}
-            onAdd={item => setServers([...servers, item])}
-          />
-        )}
+        <IonItemDivider>
+          <IonLabel>
+            {tab === 'general' && 'General Settings'}
+            {tab === 'jobs' && 'Possible Jobs'}
+            {tab === 'dist' && 'Job Distributions'}
+            {tab === 'servers' && 'Server Configuration'}
+          </IonLabel>
+        </IonItemDivider>
 
-        <IonButton
-          expand="block"
-          style={{ marginTop: 24 }}
-          onClick={() => onCreate({ formData, possibleJobs, jobDistributions, servers })}
-          disabled={!canSubmit}
-        >
-          Save Simulation
-        </IonButton>
-        {!canSubmit && (
-          <p style={{ color: 'red', marginTop: 8, fontSize: '0.9em' }}>
-            All sections must be valid and contain at least one entry before you can save.
-          </p>
-        )}
+        <div style={{ padding: '12px 0' }}>
+          {tab === 'general' && (
+            <GeneralForm formData={formData} onChange={handleFormChange} />
+          )}
+          {tab === 'jobs' && (
+            <PossibleJobsForm
+              items={possibleJobs}
+              onAdd={item => setPossibleJobs([...possibleJobs, item])}
+            />
+          )}
+          {tab === 'dist' && (
+            <JobDistributionsForm
+              items={jobDistributions}
+              onAdd={item => setJobDistributions([...jobDistributions, item])}
+            />
+          )}
+          {tab === 'servers' && (
+            <ServersForm
+              items={servers}
+              onAdd={item => setServers([...servers, item])}
+            />
+          )}
+        </div>
+
+        <div style={{ marginTop: 24 }}>
+          <IonButton
+            expand="block"
+            onClick={() => onCreate({ formData, possibleJobs, jobDistributions, servers })}
+            disabled={!canSubmit}
+          >
+            Save Simulation
+          </IonButton>
+
+          {!canSubmit && (
+            <IonText color="medium">
+              <p style={{ fontSize: '0.85em', paddingTop: 8 }}>
+                Please complete all sections with valid data before saving.
+              </p>
+            </IonText>
+          )}
+        </div>
       </IonCardContent>
     </IonCard>
   );

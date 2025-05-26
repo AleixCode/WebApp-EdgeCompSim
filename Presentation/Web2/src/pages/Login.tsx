@@ -1,59 +1,91 @@
-import React, { useState } from 'react';
-import { IonButton, IonItem, IonLabel, IonInput } from '@ionic/react';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout';
+import React, { useState } from "react";
+import {
+  IonButton,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonCard,
+  IonSegment,
+  IonSegmentButton,
+} from "@ionic/react";
+import { useAuth } from "../contexts/AuthContext";
+import Layout from "../components/Layout";
 
 const Login: React.FC = () => {
   const auth = useAuth();
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [segment, setSegment] = useState<"logIn" | "signUp">("logIn");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  const onSignUp = (e: React.FormEvent) => {
     e.preventDefault();
-    auth.login();
-    navigate('/home');
+    auth.signUp({ name: signUpName, email: signUpEmail, password: signUpPassword });
+  };
+
+  const onLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    auth.login({ email: loginEmail, password: loginPassword });
   };
 
   return (
     <Layout title="Login">
-      <form >
-        <IonItem>
-          <IonLabel position="floating">Username</IonLabel>
-          <IonInput value={username} onIonChange={e => setUsername(e.detail.value!)} />
-        </IonItem>
-        <IonItem>
-          <IonLabel position="floating">Password</IonLabel>
-          <IonInput type="password" value={password} onIonChange={e => setPassword(e.detail.value!)} />
-        </IonItem>
-        <IonButton type="submit" expand="block" style={{ marginTop: '16px' }}>
-          Login
-        </IonButton>
-      </form>
+      <IonCard>
+        <IonSegment value={segment} onIonChange={(e) => setSegment(e.detail.value as "logIn" | "signUp")}>
+          <IonSegmentButton value="logIn">
+            <IonLabel>Login</IonLabel>
+          </IonSegmentButton>
+          <IonSegmentButton value="signUp">
+            <IonLabel>Sign Up</IonLabel>
+          </IonSegmentButton>
+        </IonSegment>
+
+        {segment === "logIn" ? (
+          <form onSubmit={onLogin}>
+            <h2>Login</h2>
+            <IonItem>
+              <IonLabel position="stacked">Email</IonLabel>
+              <IonInput
+                value={loginEmail}
+                placeholder="Enter your email"
+                onIonChange={(e) => setLoginEmail(e.detail.value!)}
+              />
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Password</IonLabel>
+              <IonInput type="password" value={loginPassword} onIonChange={(e) => setLoginPassword(e.detail.value!)} />
+            </IonItem>
+            <IonButton type="submit" expand="block" style={{ marginTop: "16px" }}>
+              Login
+            </IonButton>
+          </form>
+        ) : (
+          <form onSubmit={onSignUp} style={{ marginTop: "32px" }}>
+            <h2>Sign Up</h2>
+            <IonItem>
+              <IonLabel position="stacked">Name</IonLabel>
+              <IonInput value={signUpName} onIonChange={(e) => setSignUpName(e.detail.value!)} />
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Email</IonLabel>
+              <IonInput value={signUpEmail} onIonChange={(e) => setSignUpEmail(e.detail.value!)} />
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Password</IonLabel>
+              <IonInput type="password" value={signUpPassword} onIonChange={(e) => setSignUpPassword(e.detail.value!)} />
+            </IonItem>
+            <IonButton type="submit" expand="block" style={{ marginTop: "16px" }}>
+              Sign Up
+            </IonButton>
+          </form>
+        )}
+      </IonCard>
     </Layout>
   );
 };
-
-<div class="container" id="container">
-	<div class="form-container sign-up-container">
-		<form onSubmit={handleSingUp}>
-			<h1>Create Account</h1>
-			<input type="text" placeholder="Name" />
-			<input type="email" placeholder="Email" />
-			<input type="password" placeholder="Password" />
-			<button>Sign Up</button>
-		</form>
-	</div>
-	<div class="form-container sign-in-container">
-		<form onSubmit={handleLogin}>
-			<h1>Sign in</h1>
-			<input type="email" placeholder="Email" />
-			<input type="password" placeholder="Password" />
-			<a href="#">Forgot your password?</a>
-			<button>Sign In</button>
-		</form>
-	</div>
-</div>
 
 export default Login;
