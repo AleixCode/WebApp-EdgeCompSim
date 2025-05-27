@@ -19,7 +19,7 @@ def run_project(simulation_data: dict, user_id: str, callback_url: str):
     logs, results = parse_results(simulation.id, simulation.name)
 
     # --- Direct DB update of the simulation document ---
-    update_data = {"result": results, "logs": logs}
+    update_data = {"result": results, "logs": logs, "status": "Done"}
     sim_oid = ObjectId(simulation.id)
     sim_result = _db.simulations.update_one(
         {"_id": sim_oid},

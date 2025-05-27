@@ -90,6 +90,8 @@ class Simulation:
         }
         if self.id is not None:
             data["id"] = self.id
+        if self.status is not None:
+            data["status"] = self.status
         return data
 
 # Function to create Simulation from JSON (for new simulations, id is not expected)
