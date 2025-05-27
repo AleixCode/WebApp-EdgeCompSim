@@ -59,9 +59,11 @@ class Simulation:
         possible_jobs: List[PossibleJob],
         job_distributions: List[JobDistribution],
         servers: List[Server],
-        sim_id: Optional[str] = None  # id is optional
+        sim_id: Optional[str] = None,  # id is optional,
+        status: Optional[str] = None
     ):
         self.id: Optional[str] = sim_id
+        self.status: Optional = status
         self.name: str = name
         self.time: int = time
         self.exec_time: int = exec_time

@@ -22,15 +22,30 @@ const Login: React.FC = () => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  const onSignUp = (e: React.FormEvent) => {
+  const onSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    auth.signUp({ name: signUpName, email: signUpEmail, password: signUpPassword });
+    if (auth) {
+      try {
+        await auth.signup(signUpName, signUpEmail, signUpPassword);
+        setSegment("logIn"); // Optional: redirect to login
+      } catch (err) {
+        console.error("Signup failed", err);
+      }
+    }
   };
-
-  const onLogin = (e: React.FormEvent) => {
+  
+  const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    auth.login({ email: loginEmail, password: loginPassword });
+    if (auth) {
+      try {
+        await auth.login(loginEmail, loginPassword);
+        // Navigate or show success
+      } catch (err) {
+        console.error("Login failed", err);
+      }
+    }
   };
+  
 
   return (
     <Layout title="Login">

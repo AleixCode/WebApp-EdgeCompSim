@@ -1,83 +1,83 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 
-export const AuthContext = createContext();
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-export function AuthProvider({ children }) {
+interface AuthContextType {
+  user: any;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+}
+
+// Provide a default value for context
+export const AuthContext = createContext<AuthContextType | null>(null);
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState(null);
 
-  // Check if user is already logged in on mount
   useEffect(() => {
-    fetch('http://localhost:5000/api/me', { 
-      credentials: 'include'  // include JWT cookie
-    })
-    .then(res => {
-      if (res.ok) return res.json();
-      throw new Error('Not authenticated');
-    })
-    .then(data => {
-      setUser(data);  // set user if token was valid
-    })
-    .catch(() => setUser(null));
-  }, []);
+    fetch('http://localhost:5000/api/me', { credentials: 'include' })
+      .then(res => (res.ok ? res.json() : Promise.reject('Not authenticated')))
+      .then(data => setUser(data))
+      .catch(() => setUser(null));
+  }, []); 
 
-  // Signup function
-  const signup = async (name, email, password) => {
+  const signup = async (name: string, email: string, password: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/register', {
+      const res = await fetch('http://localhost:5000/api/signup', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.msg || 'Signup failed');
-      }
-      // On success, optionally auto-login or prompt user to login
+      if (!res.ok) throw new Error('Signup failed');
     } catch (err) {
       console.error(err);
       throw err;
     }
   };
 
-  // Login function
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     try {
       const res = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        credentials: 'include',  // important to include the cookie
-        body: JSON.stringify({ email, password })
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.msg || 'Login failed');
-      }
-      // Fetch the user info after login
-      const meRes = await fetch('http://localhost:5000/api/me', {
-        credentials: 'include'
-      });
-      if (meRes.ok) {
-        const userData = await meRes.json();
-        setUser(userData);
-      }
+      if (!res.ok) throw new Error('Login failed');
+
+      const meRes = await fetch('http://localhost:5000/api/me', { credentials: 'include' });
+      if (meRes.ok) setUser(await meRes.json());
     } catch (err) {
       console.error(err);
       throw err;
     }
   };
 
-  // Logout function
   const logout = async () => {
     await fetch('http://localhost:5000/api/logout', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
     });
     setUser(null);
   };
 
+  const isAuthenticated = !!user
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

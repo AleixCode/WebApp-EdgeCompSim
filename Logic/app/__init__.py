@@ -8,6 +8,9 @@ from app.tasks import *
 from app.config import Config
 from app.mongo_instance import mongo  # Import the MongoDB instance
 
+from flask_jwt_extended import JWTManager
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -22,6 +25,9 @@ def create_app():
 
     # Initialize MongoDB
     mongo.init_app(app)
+
+    # Initialize Flask-JWT-Extended
+    jwt = JWTManager(app)  
     
     # Initialize Flask routes
     init_routes(app, mongo)

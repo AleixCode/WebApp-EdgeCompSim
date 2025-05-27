@@ -2,6 +2,8 @@ from flask_pymongo import PyMongo
 from pymongo.errors import ConnectionFailure  # Import the exception here
 from .Classes import Simulation
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash
+from bcrypt import checkpw
 
 class MongoDB:
     def __init__(self):
@@ -46,6 +48,45 @@ class MongoDB:
     def insert_user(self, user_data):
         """Insert a new user into the 'users' collection"""
         return self.get_collection("users").insert_one(user_data)
+
+    # Utility Function: Insert a New User with password hashing
+    def create_user(self, username: str, password: str, email: str):
+        """Create a new user by hashing the password and inserting into the 'users' collection."""
+        password_hash = generate_password_hash(password)
+        user_data = {
+            "username": username,
+            "password_hash": password_hash,
+            "email": email
+            # Add other default fields as needed
+        }
+        result = self.get_collection("users").insert_one(user_data)
+        # Optionally, you can attach the inserted "_id" to the user_data before returning it if needed.
+        user_data["_id"] = result.inserted_id
+        return user_data
+
+    def update_user(self, user_id, update_data):
+        """
+        Update an existing user in the 'users' collection.
+        
+        :param user_id: The users's id.
+        :param update_data: A dictionary containing the fields to update.
+        :return: The number of documents modified.
+        """
+        oid = self.get_oid(user_id)
+        result = self.get_collection("users").update_one({"_id": oid}, {"$set": update_data})
+        return result.modified_count
+
+    def find_user_by_email(self, email: str):
+        """Find a user in the 'users' collection by email and verify password"""
+        users_collection = self.get_collection("users")
+
+        # Find the user by email
+        user_data = users_collection.find_one({"email": email})
+        
+        if not user_data:
+            return None  # No user found
+
+        return user_data  # Return user details if authentication succeeds
 
 
     # 🔹 Simulations
