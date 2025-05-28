@@ -1,0 +1,4 @@
+ redis-server &
+ colima start
+
+ 

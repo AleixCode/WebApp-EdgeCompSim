@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   IonCard,
   IonCardHeader,
@@ -11,25 +11,26 @@ import {
   IonLabel,
   IonText,
   IonTitle,
-  IonItemDivider
-} from '@ionic/react';
+  IonItemDivider,
+} from "@ionic/react";
 
-import GeneralForm from './subforms/GeneralForm';
-import PossibleJobsForm from './subforms/PossibleJobsForm';
-import JobDistributionsForm from './subforms/JobDistributionsForm';
-import ServersForm from './subforms/ServersForm';
+import GeneralForm from "./subforms/GeneralForm";
+import PossibleJobsForm from "./subforms/PossibleJobsForm";
+import JobDistributionsForm from "./subforms/JobDistributionsForm";
+import ServersForm from "./subforms/ServersForm";
 
 import type {
   CreateSimulationPayload,
+  GeneralSimulationData,
   SimulationData,
   Job,
   JobDistribution,
-  Server
-} from '../interfaces';
+  Server,
+} from "../interfaces";
 
 export interface CreateSimulationProps {
   onCreate: (data: {
-    formData: SimulationData;
+    formData: GeneralSimulationData;
     possibleJobs: Job[];
     jobDistributions: JobDistribution[];
     servers: Server[];
@@ -37,9 +38,11 @@ export interface CreateSimulationProps {
 }
 
 export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
-  const [tab, setTab] = useState<'general' | 'jobs' | 'dist' | 'servers'>('general');
-  const [formData, setFormData] = useState<SimulationData>({
-    name: '',
+  const [tab, setTab] = useState<"general" | "jobs" | "dist" | "servers">(
+    "general"
+  );
+  const [formData, setFormData] = useState<GeneralSimulationData>({
+    name: "",
     time: 0,
     exec_time: 0,
     seed_users: 0,
@@ -48,15 +51,20 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
     type_placement: 0,
   });
   const [possibleJobs, setPossibleJobs] = useState<Job[]>([]);
-  const [jobDistributions, setJobDistributions] = useState<JobDistribution[]>([]);
+  const [jobDistributions, setJobDistributions] = useState<JobDistribution[]>(
+    []
+  );
   const [servers, setServers] = useState<Server[]>([]);
 
-  const handleFormChange = <K extends keyof SimulationData>(field: K, value: SimulationData[K]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleFormChange = <K extends keyof GeneralSimulationData>(
+    field: K,
+    value: GeneralSimulationData[K]
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const canSubmit =
-    formData.name !== '' &&
+    formData.name !== "" &&
     formData.time > 0 &&
     formData.exec_time > 0 &&
     possibleJobs.length > 0 &&
@@ -73,7 +81,7 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
         <IonToolbar>
           <IonSegment
             value={tab}
-            onIonChange={e => setTab(e.detail.value as any)}
+            onIonChange={(e) => setTab(e.detail.value as any)}
             scrollable
           >
             <IonSegmentButton value="general">
@@ -95,33 +103,33 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
       <IonCardContent>
         <IonItemDivider>
           <IonLabel>
-            {tab === 'general' && 'General Settings'}
-            {tab === 'jobs' && 'Possible Jobs'}
-            {tab === 'dist' && 'Job Distributions'}
-            {tab === 'servers' && 'Server Configuration'}
+            {tab === "general" && "General Settings"}
+            {tab === "jobs" && "Possible Jobs"}
+            {tab === "dist" && "Job Distributions"}
+            {tab === "servers" && "Server Configuration"}
           </IonLabel>
         </IonItemDivider>
 
-        <div style={{ padding: '12px 0' }}>
-          {tab === 'general' && (
+        <div style={{ padding: "12px 0" }}>
+          {tab === "general" && (
             <GeneralForm formData={formData} onChange={handleFormChange} />
           )}
-          {tab === 'jobs' && (
+          {tab === "jobs" && (
             <PossibleJobsForm
               items={possibleJobs}
-              onAdd={item => setPossibleJobs([...possibleJobs, item])}
+              onAdd={(item) => setPossibleJobs([...possibleJobs, item])}
             />
           )}
-          {tab === 'dist' && (
+          {tab === "dist" && (
             <JobDistributionsForm
               items={jobDistributions}
-              onAdd={item => setJobDistributions([...jobDistributions, item])}
+              onAdd={(item) => setJobDistributions([...jobDistributions, item])}
             />
           )}
-          {tab === 'servers' && (
+          {tab === "servers" && (
             <ServersForm
               items={servers}
-              onAdd={item => setServers([...servers, item])}
+              onAdd={(item) => setServers([...servers, item])}
             />
           )}
         </div>
@@ -129,7 +137,9 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
         <div style={{ marginTop: 24 }}>
           <IonButton
             expand="block"
-            onClick={() => onCreate({ formData, possibleJobs, jobDistributions, servers })}
+            onClick={() =>
+              onCreate({ formData, possibleJobs, jobDistributions, servers })
+            }
             disabled={!canSubmit}
           >
             Save Simulation
@@ -137,7 +147,7 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
 
           {!canSubmit && (
             <IonText color="medium">
-              <p style={{ fontSize: '0.85em', paddingTop: 8 }}>
+              <p style={{ fontSize: "0.85em", paddingTop: 8 }}>
                 Please complete all sections with valid data before saving.
               </p>
             </IonText>

@@ -53,19 +53,19 @@ def init_routes(app, mongo):
     def signup():
         """Sign up a new user using MongoHelper."""
         data = request.get_json() or {}
-        username = data.get("username", "")
+        name = data.get("name", "")
         password = data.get("password", "")
         email = data.get("email", "")
 
-        if not email or not password or not username:
-            return jsonify({"msg": "Missing email or username or password"}), 400
+        if not email or not password or not name:
+            return jsonify({"msg": "Missing email or name or password"}), 400
 
         # Check if the user already exists using MongoHelper
         if mongo.find_user_by_email(email):
             return jsonify({"msg": "User already exists"}), 400
 
         # Create the user using MongoHelper
-        new_user = mongo.create_user(username, password, email)
+        new_user = mongo.create_user(name, password, email)
 
         # Generate JWT token and set in response cookies
         access_token = create_access_token(identity=str(new_user["_id"]))
@@ -89,6 +89,7 @@ def init_routes(app, mongo):
     @api.route('/simulate', methods=['POST'])
     @jwt_required()
     def create_simulation():
+        print("It begun")
         # 1) Parse input JSON and create Simulation object
         data = request.get_json() or {}
         simulation: Simulation = create_simulation_from_json(data)

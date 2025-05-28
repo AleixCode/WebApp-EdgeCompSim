@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   IonItem,
   IonLabel,
@@ -8,24 +8,30 @@ import {
   IonText,
   IonList,
   IonListHeader,
-} from '@ionic/react';
-import { SimulationData } from '../../interfaces';
+} from "@ionic/react";
+import { GeneralSimulationData } from "../../interfaces";
 
 interface Props {
-  formData: SimulationData;
-  onChange: <K extends keyof SimulationData>(field: K, value: SimulationData[K]) => void;
+  formData: GeneralSimulationData;
+  onChange: <K extends keyof GeneralSimulationData>(
+    field: K,
+    value: GeneralSimulationData[K]
+  ) => void;
 }
 
 export default function GeneralForm({ formData, onChange }: Props) {
-  const errors: { [key in keyof SimulationData]?: string } = {};
-  
-  if (!formData.name) errors.name = 'Name is required';
-  if (formData.time <= 0) errors.time = 'Time must be greater than 0';
-  if (formData.exec_time <= 0) errors.exec_time = 'Exec Time must be greater than 0';
-  if (formData.seed_users < 0) errors.seed_users = 'Seed Users must be 0 or more';
-  if (formData.seed_servers < 0) errors.seed_servers = 'Seed Servers must be 0 or more';
+  const errors: { [key in keyof GeneralSimulationData]?: string } = {};
 
-  const selectStyles = { '--padding-start': '0px' };
+  if (!formData.name) errors.name = "Name is required";
+  if (formData.time <= 0) errors.time = "Time must be greater than 0";
+  if (formData.exec_time <= 0)
+    errors.exec_time = "Exec Time must be greater than 0";
+  if (formData.seed_users ?? 1 < 0)
+    errors.seed_users = "Seed Users must be 0 or more";
+  if (formData.seed_servers ?? 1 < 0)
+    errors.seed_servers = "Seed Servers must be 0 or more";
+
+  const selectStyles = { "--padding-start": "0px" };
 
   return (
     <IonList>
@@ -38,7 +44,7 @@ export default function GeneralForm({ formData, onChange }: Props) {
         <IonLabel position="stacked">Simulation Name</IonLabel>
         <IonInput
           value={formData.name}
-          onIonInput={e => onChange('name', e.detail.value!)}
+          onIonInput={(e) => onChange("name", e.detail.value!)}
         />
       </IonItem>
       {errors.name && <ErrorText text={errors.name} />}
@@ -49,7 +55,7 @@ export default function GeneralForm({ formData, onChange }: Props) {
         <IonInput
           type="number"
           value={formData.time}
-          onIonInput={e => onChange('time', Number(e.detail.value))}
+          onIonInput={(e) => onChange("time", Number(e.detail.value))}
         />
       </IonItem>
       {errors.time && <ErrorText text={errors.time} />}
@@ -60,7 +66,7 @@ export default function GeneralForm({ formData, onChange }: Props) {
         <IonInput
           type="number"
           value={formData.exec_time}
-          onIonInput={e => onChange('exec_time', Number(e.detail.value))}
+          onIonInput={(e) => onChange("exec_time", Number(e.detail.value))}
         />
       </IonItem>
       {errors.exec_time && <ErrorText text={errors.exec_time} />}
@@ -71,7 +77,7 @@ export default function GeneralForm({ formData, onChange }: Props) {
         <IonInput
           type="number"
           value={formData.seed_users}
-          onIonInput={e => onChange('seed_users', Number(e.detail.value))}
+          onIonInput={(e) => onChange("seed_users", Number(e.detail.value))}
         />
       </IonItem>
       {errors.seed_users && <ErrorText text={errors.seed_users} />}
@@ -82,11 +88,10 @@ export default function GeneralForm({ formData, onChange }: Props) {
         <IonInput
           type="number"
           value={formData.seed_servers}
-          onIonInput={e => onChange('seed_servers', Number(e.detail.value))}
+          onIonInput={(e) => onChange("seed_servers", Number(e.detail.value))}
         />
       </IonItem>
       {errors.seed_servers && <ErrorText text={errors.seed_servers} />}
-
 
       {/* Type Execution */}
       {/*
@@ -112,7 +117,7 @@ export default function GeneralForm({ formData, onChange }: Props) {
           interface="popover"
           style={selectStyles}
           value={formData.type_placement}
-          onIonChange={e => onChange('type_placement', e.detail.value!)}
+          onIonChange={(e) => onChange("type_placement", e.detail.value!)}
         >
           <IonSelectOption value={0}>Bin Packing</IonSelectOption>
           <IonSelectOption value={1}>Spread</IonSelectOption>
@@ -126,7 +131,7 @@ export default function GeneralForm({ formData, onChange }: Props) {
 function ErrorText({ text }: { text: string }) {
   return (
     <IonText color="danger">
-      <p style={{ marginLeft: '16px', marginTop: '4px', fontSize: '0.8em' }}>
+      <p style={{ marginLeft: "16px", marginTop: "4px", fontSize: "0.8em" }}>
         {text}
       </p>
     </IonText>

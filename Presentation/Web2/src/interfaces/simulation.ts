@@ -15,7 +15,7 @@ export interface Server {
   hdd: number;
   availability: string;
 }
-export interface SimulationData {
+export interface GeneralSimulationData {
   name: string;
   time: number;
   exec_time: number;
@@ -25,9 +25,19 @@ export interface SimulationData {
   type_placement: number;
 }
 
-export interface CreateSimulationPayload {
-    formData: SimulationData;
-    possibleJobs: Job[];
-    jobDistributions: JobDistribution[];
-    servers: Server[];
+export interface SimulationData extends GeneralSimulationData {
+  id: string;
+  status: Status;
+  jobs: Job[];
+  job_distributions: JobDistribution[];
+  servers: Server[];
 }
+
+export interface CreateSimulationPayload {
+  formData: GeneralSimulationData;
+  possibleJobs: Job[];
+  jobDistributions: JobDistribution[];
+  servers: Server[];
+}
+
+type Status = "pending" | "running" | "finished";

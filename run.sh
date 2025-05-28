@@ -2,6 +2,7 @@
 
 # List of script paths (relative paths)
 scripts=(
+    "./Persistence/run.sh"
     "./Persistence/start.sh"
     "./Logic/run.sh"
 )

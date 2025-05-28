@@ -1,24 +1,47 @@
-import React from 'react';
-import SimulationsCard from '../components/SimulationCard';
+import React, { useEffect, useState } from "react";
+import SimulationsCard from "../components/SimulationCard";
+import Layout from "../components/Layout";
+import { useAuth } from "../contexts/AuthContext";
+import { getSimulation } from "../api/backendClient";
+import { SimulationData } from "../interfaces";
 
 const Simulations = () => {
+  const auth = useAuth();
+  const [simulations, setSimulations] = useState<SimulationData[]>([]);
+
+  useEffect(() => {
+    const fetchSimulations = async () => {
+      if (!auth.user || !Array.isArray(auth.user.simulationsId)) return;
+
+      const fetchedSimulations = await Promise.all(
+        auth.user.simulationsId.map(async (simId) => {
+          try {
+            return await getSimulation(simId);
+          } catch (error) {
+            console.error("Failed to fetch simulation:", error);
+            return null;
+          }
+        })
+      );
+
+      // Filter out any null values before updating state
+      setSimulations(fetchedSimulations.filter((sim) => sim !== null));
+    };
+
+    fetchSimulations();
+  }, [auth.user]);
+
   return (
-    <div>
+    <Layout title="My simulations">
       <h1>Welcome to the Simulations Page</h1>
-      <p>This is the Simulations page of our React application.</p>
-      <SimulationsCard
-  title="EdgeSim #1"
-  description="Simulation of edge devices under high load."
-  status="pending"
-/>
-
-<SimulationsCard
-  title="EdgeSim #2"
-  description="Optimized simulation with 5 nodes."
-  status="running"
-/>
-
-    </div>
+      {simulations.length === 0 ? (
+        <p>No simulations found.</p>
+      ) : (
+        simulations.map((sim: SimulationData) => (
+          <SimulationsCard key={sim.id} title={sim.name} status={sim.status} />
+        ))
+      )}
+    </Layout>
   );
 };
 
