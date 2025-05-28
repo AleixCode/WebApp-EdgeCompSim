@@ -19,8 +19,8 @@ export interface GeneralSimulationData {
   name: string;
   time: number;
   exec_time: number;
-  seed_users?: number;
-  seed_servers?: number;
+  seed_users: number;
+  seed_servers: number;
   type_exec: number;
   type_placement: number;
 }

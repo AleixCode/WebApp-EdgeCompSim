@@ -60,10 +60,14 @@ class Simulation:
         job_distributions: List[JobDistribution],
         servers: List[Server],
         sim_id: Optional[str] = None,  # id is optional,
-        status: Optional[str] = None
+        status: Optional[str] = None,
+        results: Optional[str] = None,  # id is optional,
+        logs: Optional[str] = None
     ):
         self.id: Optional[str] = sim_id
-        self.status: Optional = status
+        self.status: Optional[str] = status
+        self.results: Optional[str] = results
+        self.logs: Optional[str] = logs
         self.name: str = name
         self.time: int = time
         self.exec_time: int = exec_time

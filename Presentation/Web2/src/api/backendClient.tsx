@@ -9,7 +9,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
  */
 export async function createSimulation(payload: CreateSimulationPayload) {
   const newPayload = transformPayload(payload);
-  const res = await fetch(`${API_BASE}/simulate`, {
+  const res = await fetch(`${API_BASE}/simulations`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newPayload),
@@ -22,11 +22,24 @@ export async function createSimulation(payload: CreateSimulationPayload) {
   return res.json(); // or whatever your API returns
 }
 
+export async function runSimulation(simId: string) {
+  const res = await fetch(`${API_BASE}/simulations/${simId}/run`, {
+    method: "POST",
+    credentials: "include", // important to include cookies for JWT
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`runSimulation failed: ${errorText}`);
+  }
+  return res.json(); // Should contain task_id and simulation_id
+}
+
 /**
  * Get a single simulation by ID
  */
 export async function getSimulation(id: string) {
-  const res = await fetch(`${API_BASE}/simulate/${id}`, {
+  const res = await fetch(`${API_BASE}/simulations/${id}`, {
     method: "GET",
     credentials: "include",
   });
@@ -38,7 +51,7 @@ export async function getSimulation(id: string) {
  * Update an existing simulation
  */
 export async function updateSimulation(id: string, data: any) {
-  const res = await fetch(`${API_BASE}/simulate/${id}`, {
+  const res = await fetch(`${API_BASE}/simulations/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -52,7 +65,7 @@ export async function updateSimulation(id: string, data: any) {
  * Delete a simulation
  */
 export async function deleteSimulation(id: string) {
-  const res = await fetch(`${API_BASE}/simulate/${id}`, {
+  const res = await fetch(`${API_BASE}/simulations/${id}`, {
     method: "DELETE",
     credentials: "include",
   });

@@ -26,9 +26,9 @@ export default function GeneralForm({ formData, onChange }: Props) {
   if (formData.time <= 0) errors.time = "Time must be greater than 0";
   if (formData.exec_time <= 0)
     errors.exec_time = "Exec Time must be greater than 0";
-  if (formData.seed_users ?? 1 < 0)
+  if (formData.seed_users < 0)
     errors.seed_users = "Seed Users must be 0 or more";
-  if (formData.seed_servers ?? 1 < 0)
+  if (formData.seed_servers < 0)
     errors.seed_servers = "Seed Servers must be 0 or more";
 
   const selectStyles = { "--padding-start": "0px" };

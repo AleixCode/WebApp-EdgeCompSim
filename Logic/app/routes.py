@@ -86,66 +86,103 @@ def init_routes(app, mongo):
         return jwt_required(route)
 
     # POST: Create a new simulation (protected)
-    @api.route('/simulate', methods=['POST'])
+    @api.route('/simulations', methods=['POST'])
     @jwt_required()
     def create_simulation():
-        print("It begun")
-        # 1) Parse input JSON and create Simulation object
         data = request.get_json() or {}
         simulation: Simulation = create_simulation_from_json(data)
-        simulation.status = "Running"
+        simulation.status = "Created"  # Not "Running" yet
 
-        # 2) Persist the simulation to MongoDB
-        simulation = mongo.create_simulation(simulation=simulation)
-
-        # 3) Fetch the current user by JWT identity
+        # Get user info
         user_id = get_jwt_identity()
         user = mongo.find_user_by_id(user_id)
         if not user:
             abort(404, description="User not found")
 
-        # 4) Null‑proof and update the user's simulations list
+        # Save to Mongo
+        simulation = mongo.create_simulation(simulation=simulation)
+
+        # Update user's simulations list
         sims = user.get("simulations_id") or []
         if not isinstance(sims, list):
             sims = []
         if simulation.id not in sims:
             sims.append(simulation.id)
-            # update_user takes (user_id, update_data_dict)
             mongo.update_user(user_id, {"simulations_id": sims})
 
-        # 5) Kick off the background task
+        return jsonify({"simulation_id": simulation.id}), 201
 
+    @api.route('/simulations/<sim_id>/run', methods=['POST'])
+    @jwt_required()
+    def run_simulation(sim_id):
+        # Retrieve the simulation
+        simulation = mongo.get_simulation(sim_id)
+        if simulation is None:
+            abort(404, description="Simulation not found")
+
+        # Check that the user owns it
+        user_id = get_jwt_identity()
+        user = mongo.find_user_by_id(user_id)
+        if not user or sim_id not in (user.get("simulations_id") or []):
+            abort(403, description="Not authorized to run this simulation")
+
+        # Mark as running
+        mongo.update_simulation(sim_id, {"status": "Running"})
+
+        # Start async task
         callback_url = request.url_root
         task = run_project.apply_async(
-            args=(simulation.to_dict(), user_id),
+            args=(simulation, user_id),
             kwargs={'callback_url': callback_url}
         )
 
-        # 6) Return the task and simulation IDs
-        return jsonify({"task_id": task.id, "simulation_id": simulation.id}), 202
+        return jsonify({"task_id": task.id, "simulation_id": sim_id}), 202
 
     # GET: Retrieve a simulation by id (protected)
-    @api.route('/simulate/<sim_id>', methods=['GET'])
+    @api.route('/simulations/<sim_id>', methods=['GET'])
     @jwt_required()
     def get_simulation(sim_id):
         simulation = mongo.get_simulation(sim_id)
         if simulation is None:
             abort(404, description="Simulation not found")
+        if '_id' in simulation:
+            simulation['id'] = str(simulation['_id'])
+            del simulation['_id']
         return jsonify(simulation), 200
 
     # PUT: Update an existing simulation (protected)
-    @api.route('/simulate/<sim_id>', methods=['PUT'])
+    @api.route('/simulations/<sim_id>', methods=['PUT'])
     @jwt_required()
     def update_simulation(sim_id):
-        update_data = request.get_json()
+        update_data = request.get_json() or {}
+
+        # Ensure user owns the simulation
+        user_id = get_jwt_identity()
+        user = mongo.find_user_by_id(user_id)
+        if not user or sim_id not in (user.get("simulations_id") or []):
+            abort(403, description="Not authorized to modify this simulation")
+
+        if not update_data:
+            abort(400, description="No valid fields to update")
+
+
+        sanitized_data["status"] = "Saved"
+        sanitized_data["result"] = None
+        sanitized_data["logs"] = None
+
+        # Apply update
         modified_count = mongo.update_simulation(sim_id, update_data)
         if modified_count == 0:
             abort(404, description="Simulation not found or no changes applied")
-        simulation = mongo.get_simulation(sim_id)
-        return jsonify(simulation), 200
+
+        updated_sim = mongo.get_simulation(sim_id)
+        if '_id' in simulation:
+            simulation['id'] = str(simulation['_id'])
+            del simulation['_id']
+        return jsonify(updated_sim), 200
 
     # DELETE: Remove a simulation (protected)
-    @api.route('/simulate/<sim_id>', methods=['DELETE'])
+    @api.route('/simulations/<sim_id>', methods=['DELETE'])
     @jwt_required()
     def delete_simulation(sim_id):
         deleted_count = mongo.delete_simulation(sim_id)

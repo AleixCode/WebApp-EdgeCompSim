@@ -38,7 +38,13 @@ const Simulations = () => {
         <p>No simulations found.</p>
       ) : (
         simulations.map((sim: SimulationData) => (
-          <SimulationsCard key={sim.id} title={sim.name} status={sim.status} />
+          <SimulationsCard
+            key={sim.id}
+            title={sim.name}
+            status={sim.status}
+            simulationId={sim.id}
+            simulation={sim}
+          />
         ))
       )}
     </Layout>
