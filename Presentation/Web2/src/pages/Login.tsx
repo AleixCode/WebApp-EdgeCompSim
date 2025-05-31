@@ -10,9 +10,11 @@ import {
 } from "@ionic/react";
 import { useAuth } from "../contexts/AuthContext";
 import Layout from "../components/Layout";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [segment, setSegment] = useState<"logIn" | "signUp">("logIn");
 
   const [signUpName, setSignUpName] = useState("");
@@ -22,18 +24,21 @@ const Login: React.FC = () => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
+  if (auth.isAuthenticated) {
+    navigate("/simulations");
+  }
+
   const onSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (auth) {
       try {
         await auth.signup(signUpName, signUpEmail, signUpPassword);
-        setSegment("logIn"); // Optional: redirect to login
       } catch (err) {
         console.error("Signup failed", err);
       }
     }
   };
-  
+
   const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (auth) {
@@ -45,12 +50,14 @@ const Login: React.FC = () => {
       }
     }
   };
-  
 
   return (
     <Layout title="Login">
       <IonCard>
-        <IonSegment value={segment} onIonChange={(e) => setSegment(e.detail.value as "logIn" | "signUp")}>
+        <IonSegment
+          value={segment}
+          onIonChange={(e) => setSegment(e.detail.value as "logIn" | "signUp")}
+        >
           <IonSegmentButton value="logIn">
             <IonLabel>Login</IonLabel>
           </IonSegmentButton>
@@ -72,9 +79,17 @@ const Login: React.FC = () => {
             </IonItem>
             <IonItem>
               <IonLabel position="stacked">Password</IonLabel>
-              <IonInput type="password" value={loginPassword} onIonChange={(e) => setLoginPassword(e.detail.value!)} />
+              <IonInput
+                type="password"
+                value={loginPassword}
+                onIonChange={(e) => setLoginPassword(e.detail.value!)}
+              />
             </IonItem>
-            <IonButton type="submit" expand="block" style={{ marginTop: "16px" }}>
+            <IonButton
+              type="submit"
+              expand="block"
+              style={{ marginTop: "16px" }}
+            >
               Login
             </IonButton>
           </form>
@@ -83,17 +98,31 @@ const Login: React.FC = () => {
             <h2>Sign Up</h2>
             <IonItem>
               <IonLabel position="stacked">Name</IonLabel>
-              <IonInput value={signUpName} onIonChange={(e) => setSignUpName(e.detail.value!)} />
+              <IonInput
+                value={signUpName}
+                onIonChange={(e) => setSignUpName(e.detail.value!)}
+              />
             </IonItem>
             <IonItem>
               <IonLabel position="stacked">Email</IonLabel>
-              <IonInput value={signUpEmail} onIonChange={(e) => setSignUpEmail(e.detail.value!)} />
+              <IonInput
+                value={signUpEmail}
+                onIonChange={(e) => setSignUpEmail(e.detail.value!)}
+              />
             </IonItem>
             <IonItem>
               <IonLabel position="stacked">Password</IonLabel>
-              <IonInput type="password" value={signUpPassword} onIonChange={(e) => setSignUpPassword(e.detail.value!)} />
+              <IonInput
+                type="password"
+                value={signUpPassword}
+                onIonChange={(e) => setSignUpPassword(e.detail.value!)}
+              />
             </IonItem>
-            <IonButton type="submit" expand="block" style={{ marginTop: "16px" }}>
+            <IonButton
+              type="submit"
+              expand="block"
+              style={{ marginTop: "16px" }}
+            >
               Sign Up
             </IonButton>
           </form>

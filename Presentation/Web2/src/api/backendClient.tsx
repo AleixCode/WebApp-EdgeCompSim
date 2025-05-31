@@ -1,13 +1,18 @@
 // src/api/backendClient.ts
 import { CreateSimulationPayload } from "../interfaces";
+import { useAuth } from "../contexts/AuthContext";
 
 // Base URL of your API
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
 
 /**
  * Create a new simulation on the server.
+ * Optionally accepts a callback function to update user data after a successful API call.
  */
-export async function createSimulation(payload: CreateSimulationPayload) {
+export async function createSimulation(
+  payload: CreateSimulationPayload,
+  onSuccessUpdateUserData?: () => Promise<void>
+) {
   const newPayload = transformPayload(payload);
   const res = await fetch(`${API_BASE}/simulations`, {
     method: "POST",
@@ -15,14 +20,30 @@ export async function createSimulation(payload: CreateSimulationPayload) {
     body: JSON.stringify(newPayload),
     credentials: "include",
   });
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`createSimulation failed: ${errorText}`);
   }
-  return res.json(); // or whatever your API returns
+
+  const result = await res.json(); // or whatever your API returns
+
+  // If a callback was provided, call it to refresh user data
+  if (onSuccessUpdateUserData) {
+    await onSuccessUpdateUserData();
+  }
+
+  return result;
 }
 
-export async function runSimulation(simId: string) {
+/**
+ * Run a simulation on the server.
+ * Also supports an optional callback for updating user data.
+ */
+export async function runSimulation(
+  simId: string,
+  onSuccessUpdateUserData?: () => Promise<void>
+) {
   const res = await fetch(`${API_BASE}/simulations/${simId}/run`, {
     method: "POST",
     credentials: "include", // important to include cookies for JWT
@@ -32,7 +53,14 @@ export async function runSimulation(simId: string) {
     const errorText = await res.text();
     throw new Error(`runSimulation failed: ${errorText}`);
   }
-  return res.json(); // Should contain task_id and simulation_id
+
+  const result = await res.json(); // Should contain task_id and simulation_id
+
+  if (onSuccessUpdateUserData) {
+    await onSuccessUpdateUserData();
+  }
+
+  return result;
 }
 
 /**
@@ -50,27 +78,50 @@ export async function getSimulation(id: string) {
 /**
  * Update an existing simulation
  */
-export async function updateSimulation(id: string, data: any) {
+export async function updateSimulation(
+  id: string,
+  data: any,
+  onSuccessUpdateUserData?: () => Promise<void>
+) {
   const res = await fetch(`${API_BASE}/simulations/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(data),
   });
+
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+
+  const result = await res.json();
+
+  if (onSuccessUpdateUserData) {
+    await onSuccessUpdateUserData();
+  }
+
+  return result;
 }
 
 /**
  * Delete a simulation
  */
-export async function deleteSimulation(id: string) {
+export async function deleteSimulation(
+  id: string,
+  onSuccessUpdateUserData?: () => Promise<void>
+) {
   const res = await fetch(`${API_BASE}/simulations/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
+
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+
+  const result = await res.json();
+
+  if (onSuccessUpdateUserData) {
+    await onSuccessUpdateUserData();
+  }
+
+  return result;
 }
 
 /**

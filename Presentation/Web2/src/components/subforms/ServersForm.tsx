@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   IonList,
   IonListHeader,
@@ -8,48 +8,113 @@ import {
   IonSelect,
   IonSelectOption,
   IonButton,
-  IonText
-} from '@ionic/react';
-import type { Server } from '../../interfaces';
+  IonText,
+} from "@ionic/react";
+import type { Server } from "../../interfaces";
 
 interface Props {
   items: Server[];
   onAdd: (server: Server) => void;
+  onRemove: (index: number) => void;
+  onValidChange: (isValid: boolean) => void;
 }
 
-export default function ServersForm({ items, onAdd }: Props) {
-  const initialState: Server = { cpu: 0, mem: 0, hdd: 0, availability: '' };
-  const [srv, setSrv] = useState<Server>(initialState);
-  const [error, setError] = useState('');
+export default function ServersForm({
+  items,
+  onAdd,
+  onRemove,
+  onValidChange,
+}: Props) {
+  // The form fields are stored as strings so that they start empty.
+  const initialServer = { cpu: "", mem: "", hdd: "", availability: "" };
+  const [srv, setSrv] = useState(initialServer);
+  const [quantity, setQuantity] = useState("");
 
-  const parseNumber = (value: string | null | undefined): number => {
-    const num = parseFloat(value || '0');
-    return isNaN(num) ? 0 : num;
-  };
+  // Touched state to show errors only after user interaction.
+  const [touched, setTouched] = useState({
+    cpu: false,
+    mem: false,
+    hdd: false,
+    availability: false,
+    quantity: false,
+  });
 
-  const validate = (): string => {
-    if (srv.cpu <= 0 || srv.mem <= 0 || srv.hdd <= 0) {
-      return 'CPU, Memory, and HDD must be greater than 0.';
-    }
-    if (!srv.availability) {
-      return 'Please select an availability level.';
-    }
-    return '';
-  };
+  // --- Field-level error computation ---
 
+  const cpuError =
+    touched.cpu && (srv.cpu.trim() === "" || Number(srv.cpu) <= 0)
+      ? "CPU must be greater than 0."
+      : "";
+  const memError =
+    touched.mem && (srv.mem.trim() === "" || Number(srv.mem) <= 0)
+      ? "Memory must be greater than 0."
+      : "";
+  const hddError =
+    touched.hdd && (srv.hdd.trim() === "" || Number(srv.hdd) <= 0)
+      ? "HDD must be greater than 0."
+      : "";
+  const availabilityError =
+    touched.availability && srv.availability.trim() === ""
+      ? "Please select an availability level."
+      : "";
+  const quantityError =
+    touched.quantity && quantity.trim() !== "" && Number(quantity) <= 0
+      ? "Quantity must be greater than 0."
+      : "";
+
+  // The Add button is enabled only when the current input values are valid.
+  const isInputValid =
+    srv.cpu.trim() !== "" &&
+    Number(srv.cpu) > 0 &&
+    srv.mem.trim() !== "" &&
+    Number(srv.mem) > 0 &&
+    srv.hdd.trim() !== "" &&
+    Number(srv.hdd) > 0 &&
+    srv.availability.trim() !== "" &&
+    (quantity.trim() === "" || Number(quantity) > 0);
+
+  // --- onValidChange: report validity based solely on the added data ---
+  useEffect(() => {
+    // The Servers form is considered valid only when at least one server has been added.
+    onValidChange(items.length > 0);
+  }, [items]);
+
+  // --- Handlers ---
   const handleAdd = () => {
-    const err = validate();
-    if (err) {
-      setError(err);
-      return;
+    // Mark all input fields as touched so that errors (if any) become visible.
+    setTouched({
+      cpu: true,
+      mem: true,
+      hdd: true,
+      availability: true,
+      quantity: true,
+    });
+    if (!isInputValid) return;
+
+    // Use quantity if specified; default is 1.
+    const qty = quantity.trim() === "" ? 1 : Number(quantity);
+    console.log("Quantity parsed is = ", qty);
+    console.log("Quantity normal is = ", quantity);
+    const newServer: Server = {
+      cpu: Number(srv.cpu),
+      mem: Number(srv.mem),
+      hdd: Number(srv.hdd),
+      availability: srv.availability,
+    };
+    for (let i = 0; i < qty; i++) {
+      onAdd(newServer);
     }
-
-    onAdd(srv);
-    setSrv(initialState);
-    setError('');
+    // Reset the form inputs and the touched state.
+    setSrv(initialServer);
+    setQuantity("");
+    setTouched({
+      cpu: false,
+      mem: false,
+      hdd: false,
+      availability: false,
+      quantity: false,
+    });
   };
-
-  const isValid = validate() === '';
 
   return (
     <IonList>
@@ -57,62 +122,77 @@ export default function ServersForm({ items, onAdd }: Props) {
         <IonLabel>Add Server</IonLabel>
       </IonListHeader>
 
+      {/* CPU */}
       <IonItem>
         <IonLabel position="stacked">CPU</IonLabel>
         <IonInput
           type="number"
           value={srv.cpu}
-          onIonInput={e =>
-            setSrv({ ...srv, cpu: parseNumber((e.target as HTMLInputElement).value) })
-          }
           placeholder="Enter CPU"
+          onIonInput={(e) => setSrv({ ...srv, cpu: e.detail.value as string })}
+          onIonBlur={() => setTouched((prev) => ({ ...prev, cpu: true }))}
         />
       </IonItem>
+      {cpuError && <ErrorText text={cpuError} />}
 
+      {/* Memory */}
       <IonItem>
         <IonLabel position="stacked">Memory</IonLabel>
         <IonInput
           type="number"
           value={srv.mem}
-          onIonInput={e =>
-            setSrv({ ...srv, mem: parseNumber((e.target as HTMLInputElement).value) })
-          }
           placeholder="Enter Memory"
+          onIonInput={(e) => setSrv({ ...srv, mem: e.detail.value as string })}
+          onIonBlur={() => setTouched((prev) => ({ ...prev, mem: true }))}
         />
       </IonItem>
+      {memError && <ErrorText text={memError} />}
 
+      {/* HDD */}
       <IonItem>
         <IonLabel position="stacked">HDD</IonLabel>
         <IonInput
           type="number"
           value={srv.hdd}
-          onIonInput={e =>
-            setSrv({ ...srv, hdd: parseNumber((e.target as HTMLInputElement).value) })
-          }
           placeholder="Enter HDD"
+          onIonInput={(e) => setSrv({ ...srv, hdd: e.detail.value as string })}
+          onIonBlur={() => setTouched((prev) => ({ ...prev, hdd: true }))}
         />
       </IonItem>
+      {hddError && <ErrorText text={hddError} />}
 
+      {/* Availability */}
       <IonItem>
         <IonLabel position="stacked">Availability</IonLabel>
         <IonSelect
           value={srv.availability}
           placeholder="Select Availability"
-          onIonChange={e => setSrv({ ...srv, availability: e.detail.value })}
+          onIonChange={(e) => setSrv({ ...srv, availability: e.detail.value })}
+          onIonBlur={() =>
+            setTouched((prev) => ({ ...prev, availability: true }))
+          }
         >
           <IonSelectOption value="High">High Availability</IonSelectOption>
           <IonSelectOption value="Medium">Medium Availability</IonSelectOption>
           <IonSelectOption value="Low">Low Availability</IonSelectOption>
         </IonSelect>
       </IonItem>
+      {availabilityError && <ErrorText text={availabilityError} />}
 
-      {error && (
-        <IonText color="danger">
-          <p style={{ margin: '8px 16px' }}>{error}</p>
-        </IonText>
-      )}
+      {/* Quantity */}
+      <IonItem>
+        <IonLabel position="stacked">Quantity</IonLabel>
+        <IonInput
+          type="number"
+          value={quantity}
+          placeholder="Enter Quantity (default 1)"
+          onIonInput={(e) => setQuantity(e.detail.value as string)}
+          onIonBlur={() => setTouched((prev) => ({ ...prev, quantity: true }))}
+        />
+      </IonItem>
+      {quantityError && <ErrorText text={quantityError} />}
 
-      <IonButton expand="full" onClick={handleAdd} disabled={!isValid}>
+      <IonButton expand="full" onClick={handleAdd} disabled={!isInputValid}>
         Add Server
       </IonButton>
 
@@ -124,12 +204,26 @@ export default function ServersForm({ items, onAdd }: Props) {
           {items.map((s, i) => (
             <IonItem key={i}>
               <IonLabel>
-                CPU: {s.cpu}, MEM: {s.mem}, HDD: {s.hdd}, Availability: {s.availability}
+                CPU: {s.cpu}, MEM: {s.mem}, HDD: {s.hdd}, Availability:{" "}
+                {s.availability}
               </IonLabel>
+              <IonButton color="danger" onClick={() => onRemove(i)}>
+                Remove
+              </IonButton>
             </IonItem>
           ))}
         </>
       )}
     </IonList>
+  );
+}
+
+function ErrorText({ text }: { text: string }) {
+  return (
+    <IonText color="danger">
+      <p style={{ marginLeft: "16px", marginTop: "4px", fontSize: "0.8em" }}>
+        {text}
+      </p>
+    </IonText>
   );
 }

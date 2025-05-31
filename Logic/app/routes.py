@@ -91,7 +91,7 @@ def init_routes(app, mongo):
     def create_simulation():
         data = request.get_json() or {}
         simulation: Simulation = create_simulation_from_json(data)
-        simulation.status = "Created"  # Not "Running" yet
+        simulation.status = "Pending"  # Not "Running" yet
 
         # Get user info
         user_id = get_jwt_identity()
@@ -120,6 +120,10 @@ def init_routes(app, mongo):
         if simulation is None:
             abort(404, description="Simulation not found")
 
+        payload = simulation.copy()
+        # 1) Turn the Mongo _id into a str
+        payload['id'] = str(payload.pop('_id'))
+
         # Check that the user owns it
         user_id = get_jwt_identity()
         user = mongo.find_user_by_id(user_id)
@@ -132,7 +136,7 @@ def init_routes(app, mongo):
         # Start async task
         callback_url = request.url_root
         task = run_project.apply_async(
-            args=(simulation, user_id),
+            args=(payload, user_id),
             kwargs={'callback_url': callback_url}
         )
 
@@ -181,14 +185,24 @@ def init_routes(app, mongo):
             del simulation['_id']
         return jsonify(updated_sim), 200
 
-    # DELETE: Remove a simulation (protected)
     @api.route('/simulations/<sim_id>', methods=['DELETE'])
     @jwt_required()
     def delete_simulation(sim_id):
         deleted_count = mongo.delete_simulation(sim_id)
         if deleted_count == 0:
             abort(404, description="Simulation not found")
+
+        user_id = get_jwt_identity()
+        user = mongo.find_user_by_id(user_id)
+        if not user or sim_id not in (user.get("simulations_id") or []):
+            abort(403, description="Not authorized to modify this simulation")
+
+        # Remove sim_id from user's simulations_id array
+        updated_simulations = [sid for sid in user.get("simulations_id", []) if sid != sim_id]
+        mongo.update_user(user_id, {"simulations_id": updated_simulations})
+
         return jsonify({"message": "Simulation deleted"}), 200
+
 
     # Public status endpoint
     @api.route('/', methods=['GET'])

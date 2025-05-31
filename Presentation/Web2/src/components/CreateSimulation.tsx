@@ -1,18 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   IonCard,
   IonCardHeader,
+  IonToolbar,
   IonCardTitle,
   IonCardContent,
-  IonToolbar,
-  IonButton,
   IonSegment,
   IonSegmentButton,
   IonLabel,
+  IonButton,
   IonText,
-  IonTitle,
-  IonItemDivider,
+  IonIcon,
 } from "@ionic/react";
+import { checkmarkCircleOutline } from "ionicons/icons";
 
 import GeneralForm from "./subforms/GeneralForm";
 import PossibleJobsForm from "./subforms/PossibleJobsForm";
@@ -22,25 +22,21 @@ import ServersForm from "./subforms/ServersForm";
 import type {
   CreateSimulationPayload,
   GeneralSimulationData,
-  SimulationData,
   Job,
   JobDistribution,
   Server,
 } from "../interfaces";
 
-export interface CreateSimulationProps {
-  onCreate: (data: {
-    formData: GeneralSimulationData;
-    possibleJobs: Job[];
-    jobDistributions: JobDistribution[];
-    servers: Server[];
-  }) => void;
-}
-
-export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
+export default function CreateSimulation({
+  onCreate,
+}: {
+  onCreate: (data: CreateSimulationPayload) => void;
+}) {
   const [tab, setTab] = useState<"general" | "jobs" | "dist" | "servers">(
     "general"
   );
+
+  // form data
   const [formData, setFormData] = useState<GeneralSimulationData>({
     name: "",
     time: 0,
@@ -56,6 +52,32 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
   );
   const [servers, setServers] = useState<Server[]>([]);
 
+  // track tab validity
+  const [validTabs, setValidTabs] = useState({
+    general: false,
+    jobs: false,
+    dist: false,
+    servers: false,
+  });
+
+  // Memoized callbacks to avoid infinite loops
+  const handleGeneralValid = useCallback(
+    (valid: boolean) => setValidTabs((v) => ({ ...v, general: valid })),
+    []
+  );
+  const handleJobsValid = useCallback(
+    (valid: boolean) => setValidTabs((v) => ({ ...v, jobs: valid })),
+    []
+  );
+  const handleDistsValid = useCallback(
+    (valid: boolean) => setValidTabs((v) => ({ ...v, dist: valid })),
+    []
+  );
+  const handleServersValid = useCallback(
+    (valid: boolean) => setValidTabs((v) => ({ ...v, servers: valid })),
+    []
+  );
+
   const handleFormChange = <K extends keyof GeneralSimulationData>(
     field: K,
     value: GeneralSimulationData[K]
@@ -64,9 +86,7 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
   };
 
   const canSubmit =
-    formData.name !== "" &&
-    formData.time > 0 &&
-    formData.exec_time > 0 &&
+    Object.values(validTabs).every((v) => v) &&
     possibleJobs.length > 0 &&
     jobDistributions.length > 0 &&
     servers.length > 0;
@@ -77,7 +97,6 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
         <IonToolbar>
           <IonCardTitle>Create Simulation</IonCardTitle>
         </IonToolbar>
-
         <IonToolbar>
           <IonSegment
             value={tab}
@@ -85,54 +104,77 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
             scrollable
           >
             <IonSegmentButton value="general">
-              <IonLabel>General</IonLabel>
+              <IonLabel>
+                General{" "}
+                {validTabs.general && <IonIcon icon={checkmarkCircleOutline} />}
+              </IonLabel>
             </IonSegmentButton>
             <IonSegmentButton value="jobs">
-              <IonLabel>Jobs</IonLabel>
+              <IonLabel>
+                Jobs{" "}
+                {validTabs.jobs && <IonIcon icon={checkmarkCircleOutline} />}
+              </IonLabel>
             </IonSegmentButton>
             <IonSegmentButton value="dist">
-              <IonLabel>Distributions</IonLabel>
+              <IonLabel>
+                Distributions{" "}
+                {validTabs.dist && <IonIcon icon={checkmarkCircleOutline} />}
+              </IonLabel>
             </IonSegmentButton>
             <IonSegmentButton value="servers">
-              <IonLabel>Servers</IonLabel>
+              <IonLabel>
+                Servers{" "}
+                {validTabs.servers && <IonIcon icon={checkmarkCircleOutline} />}
+              </IonLabel>
             </IonSegmentButton>
           </IonSegment>
         </IonToolbar>
       </IonCardHeader>
 
       <IonCardContent>
-        <IonItemDivider>
-          <IonLabel>
-            {tab === "general" && "General Settings"}
-            {tab === "jobs" && "Possible Jobs"}
-            {tab === "dist" && "Job Distributions"}
-            {tab === "servers" && "Server Configuration"}
-          </IonLabel>
-        </IonItemDivider>
+        {tab === "general" && (
+          <GeneralForm
+            formData={formData}
+            onChange={handleFormChange}
+            onValidChange={handleGeneralValid}
+          />
+        )}
 
-        <div style={{ padding: "12px 0" }}>
-          {tab === "general" && (
-            <GeneralForm formData={formData} onChange={handleFormChange} />
-          )}
-          {tab === "jobs" && (
-            <PossibleJobsForm
-              items={possibleJobs}
-              onAdd={(item) => setPossibleJobs([...possibleJobs, item])}
-            />
-          )}
-          {tab === "dist" && (
-            <JobDistributionsForm
-              items={jobDistributions}
-              onAdd={(item) => setJobDistributions([...jobDistributions, item])}
-            />
-          )}
-          {tab === "servers" && (
-            <ServersForm
-              items={servers}
-              onAdd={(item) => setServers([...servers, item])}
-            />
-          )}
-        </div>
+        {tab === "jobs" && (
+          <PossibleJobsForm
+            items={possibleJobs}
+            onAdd={(item) => setPossibleJobs([...possibleJobs, item])}
+            onRemove={(i: number) =>
+              setPossibleJobs(possibleJobs.filter((_, idx) => idx !== i))
+            }
+            onValidChange={handleJobsValid}
+          />
+        )}
+
+        {tab === "dist" && (
+          <JobDistributionsForm
+            simulationTime={formData.time}
+            items={jobDistributions}
+            onAdd={(item) => setJobDistributions([...jobDistributions, item])}
+            onRemove={(i: number) =>
+              setJobDistributions(
+                jobDistributions.filter((_, idx) => idx !== i)
+              )
+            }
+            onValidChange={handleDistsValid}
+          />
+        )}
+
+        {tab === "servers" && (
+          <ServersForm
+            items={servers}
+            onAdd={(item) => setServers((prev) => [...prev, item])}
+            onRemove={(i: number) =>
+              setServers(servers.filter((_, idx) => idx !== i))
+            }
+            onValidChange={handleServersValid}
+          />
+        )}
 
         <div style={{ marginTop: 24 }}>
           <IonButton
@@ -144,12 +186,9 @@ export default function CreateSimulation({ onCreate }: CreateSimulationProps) {
           >
             Save Simulation
           </IonButton>
-
           {!canSubmit && (
             <IonText color="medium">
-              <p style={{ fontSize: "0.85em", paddingTop: 8 }}>
-                Please complete all sections with valid data before saving.
-              </p>
+              Please complete all sections (tabs show a ✔︎ when valid).
             </IonText>
           )}
         </div>

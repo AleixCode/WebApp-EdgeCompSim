@@ -86,7 +86,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         body: JSON.stringify({ email, password }),
       });
       if (!res.ok) throw new Error("Login failed");
-
       updateUserData();
     } catch (err) {
       console.error(err);

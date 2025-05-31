@@ -1,5 +1,4 @@
-// src/components/subforms/PossibleJobsForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   IonList,
   IonItem,
@@ -7,37 +6,111 @@ import {
   IonInput,
   IonButton,
   IonListHeader,
-  IonText
-} from '@ionic/react';
-import { Job } from '../../interfaces';
+  IonText,
+} from "@ionic/react";
+import { Job } from "../../interfaces";
 
 interface Props {
   items: Job[];
   onAdd: (job: Job) => void;
+  onRemove: (index: number) => void;
+  onValidChange: (isValid: boolean) => void;
 }
 
-export default function PossibleJobsForm({ items, onAdd }: Props) {
-  const [job, setJob] = useState<Job>({ cpu: 0, mem: 0, hdd: 0, probability: 0 });
-  const [error, setError] = useState('');
+export default function PossibleJobsForm({
+  items,
+  onAdd,
+  onRemove,
+  onValidChange,
+}: Props) {
+  // Local state for the new job, stored as strings so that inputs start empty.
+  const initialState = { cpu: "", mem: "", hdd: "", probability: "" };
+  const [job, setJob] = useState(initialState);
 
-  const validate = () => {
-    if (job.cpu <= 0 || job.mem <= 0 || job.hdd <= 0) return 'CPU, Memory, and HDD must be > 0';
-    if (job.probability <= 0 || job.probability > 1) return 'Probability must be between 0 and 1';
-    return '';
-  };
+  // Track touched state for each field so errors only show after interaction.
+  const [touched, setTouched] = useState({
+    cpu: false,
+    mem: false,
+    hdd: false,
+    probability: false,
+  });
+
+  // Compute error messages for each field (shown just under their corresponding input)
+  const cpuError =
+    touched.cpu && (job.cpu === "" || Number(job.cpu) <= 0)
+      ? "CPU must be greater than 0."
+      : "";
+  const memError =
+    touched.mem && (job.mem === "" || Number(job.mem) <= 0)
+      ? "Memory must be greater than 0."
+      : "";
+  const hddError =
+    touched.hdd && (job.hdd === "" || Number(job.hdd) <= 0)
+      ? "HDD must be greater than 0."
+      : "";
+  const probabilityError =
+    touched.probability &&
+    (job.probability === "" ||
+      Number(job.probability) <= 0 ||
+      Number(job.probability) > 1)
+      ? "Probability must be between 0 and 1."
+      : "";
+
+  // Check if the new job form is completely filled.
+  const isJobInputFilled =
+    job.cpu !== "" &&
+    job.mem !== "" &&
+    job.hdd !== "" &&
+    job.probability !== "";
+  // And if all fields are valid.
+  const isJobInputValid =
+    isJobInputFilled &&
+    !cpuError &&
+    !memError &&
+    !hddError &&
+    !probabilityError;
+
+  // Global condition: the list of added jobs must not be empty and the sum of their probabilities must equal 1.
+  const totalProbability = items.reduce(
+    (sum, j) => sum + Number(j.probability),
+    0
+  );
+  const globalValid =
+    items.length > 0 && Math.abs(totalProbability - 1) < 0.0001;
+
+  // Inform the parent about the overall validity of this form.
+  useEffect(() => {
+    onValidChange(globalValid);
+  }, [globalValid]);
 
   const handleAdd = () => {
-    const err = validate();
-    if (err) {
-      setError(err);
-    } else {
-      onAdd(job);
-      setJob({ cpu: 0, mem: 0, hdd: 0, probability: 0 });
-      setError('');
-    }
-  };
+    // Mark each field as touched so errors show up if the input is incorrect.
+    setTouched({
+      cpu: true,
+      mem: true,
+      hdd: true,
+      probability: true,
+    });
+    if (!isJobInputValid) return;
 
-  const isValid = validate() === '';
+    // Create a new job with numbers converted appropriately.
+    const newJob: Job = {
+      cpu: Number(job.cpu),
+      mem: Number(job.mem),
+      hdd: Number(job.hdd),
+      probability: Number(job.probability),
+    };
+    onAdd(newJob);
+
+    // Reset the new job form.
+    setJob(initialState);
+    setTouched({
+      cpu: false,
+      mem: false,
+      hdd: false,
+      probability: false,
+    });
+  };
 
   return (
     <IonList>
@@ -50,54 +123,101 @@ export default function PossibleJobsForm({ items, onAdd }: Props) {
         <IonInput
           type="number"
           value={job.cpu}
-          onIonChange={e => setJob({ ...job, cpu: Number(e.detail.value) })}
+          placeholder="Enter CPU"
+          onIonInput={(e) => setJob({ ...job, cpu: e.detail.value! })}
+          onIonBlur={() => setTouched({ ...touched, cpu: true })}
         />
       </IonItem>
+      {cpuError && (
+        <IonText color="danger">
+          <p style={{ margin: "4px 16px" }}>{cpuError}</p>
+        </IonText>
+      )}
 
       <IonItem>
         <IonLabel position="stacked">Memory</IonLabel>
         <IonInput
           type="number"
           value={job.mem}
-          onIonChange={e => setJob({ ...job, mem: Number(e.detail.value) })}
+          placeholder="Enter Memory"
+          onIonInput={(e) => setJob({ ...job, mem: e.detail.value! })}
+          onIonBlur={() => setTouched({ ...touched, mem: true })}
         />
       </IonItem>
+      {memError && (
+        <IonText color="danger">
+          <p style={{ margin: "4px 16px" }}>{memError}</p>
+        </IonText>
+      )}
 
       <IonItem>
         <IonLabel position="stacked">HDD</IonLabel>
         <IonInput
           type="number"
           value={job.hdd}
-          onIonChange={e => setJob({ ...job, hdd: Number(e.detail.value) })}
+          placeholder="Enter HDD"
+          onIonInput={(e) => setJob({ ...job, hdd: e.detail.value! })}
+          onIonBlur={() => setTouched({ ...touched, hdd: true })}
         />
       </IonItem>
+      {hddError && (
+        <IonText color="danger">
+          <p style={{ margin: "4px 16px" }}>{hddError}</p>
+        </IonText>
+      )}
 
       <IonItem>
         <IonLabel position="stacked">Probability (0–1)</IonLabel>
         <IonInput
           type="number"
           value={job.probability}
-          onIonChange={e => setJob({ ...job, probability: Number(e.detail.value) })}
+          placeholder="Enter Probability"
+          onIonInput={(e) => setJob({ ...job, probability: e.detail.value! })}
+          onIonBlur={() => setTouched({ ...touched, probability: true })}
         />
       </IonItem>
-
-      {error && (
+      {probabilityError && (
         <IonText color="danger">
-          <p style={{ margin: 8 }}>{error}</p>
+          <p style={{ margin: "4px 16px" }}>{probabilityError}</p>
         </IonText>
       )}
 
-      <IonButton expand="full" onClick={handleAdd} disabled={!isValid}>
+      <IonButton
+        expand="full"
+        onClick={handleAdd}
+        disabled={!isJobInputFilled || !isJobInputValid}
+      >
         Add Job
       </IonButton>
 
-      {items.map((j, i) => (
-        <IonItem key={i}>
-          <IonLabel>
-            {`CPU: ${j.cpu}, MEM: ${j.mem}, HDD: ${j.hdd}, Prob: ${j.probability}`}
-          </IonLabel>
-        </IonItem>
-      ))}
+      {/* Global error message about the sum of probabilities */}
+      {items.length > 0 && Math.abs(totalProbability - 1) >= 0.0001 && (
+        <IonText color="danger">
+          <p style={{ margin: "4px 16px" }}>
+            Total probability of added jobs is {totalProbability.toFixed(2)}. It
+            must equal 1.
+          </p>
+        </IonText>
+      )}
+
+      {/* List of added jobs with remove buttons */}
+      {items.length > 0 && (
+        <>
+          <IonListHeader>
+            <IonLabel>Jobs List</IonLabel>
+          </IonListHeader>
+          {items.map((j, i) => (
+            <IonItem key={i}>
+              <IonLabel>
+                {`CPU: ${j.cpu}, MEM: ${j.mem}, HDD: ${j.hdd}, Prob: ${j.probability}`}
+              </IonLabel>
+              <IonButton color="danger" onClick={() => onRemove(i)}>
+                Remove
+              </IonButton>
+            </IonItem>
+          ))}
+        </>
+      )}
     </IonList>
   );
 }

@@ -40,4 +40,4 @@ export interface CreateSimulationPayload {
   servers: Server[];
 }
 
-type Status = "pending" | "running" | "finished";
+type Status = "Pending" | "Running" | "Finished";
