@@ -4,12 +4,12 @@ from flask import Blueprint, jsonify, request, send_file, abort
 from flask_jwt_extended import (
     JWTManager, create_access_token, 
     set_access_cookies, unset_jwt_cookies,
-    jwt_required, get_jwt_identity, get_jwt
+    jwt_required, get_jwt_identity, create_refresh_token, set_refresh_cookies
 )
 from werkzeug.security import check_password_hash
 
 from .tasks import run_project
-from .Classes import Simulation, create_simulation_from_json
+from .Classes import Simulation, create_simulation_from_json, create_simulation_from_dict
 from .utils import get_directories
 
 def init_routes(app, mongo):
@@ -20,7 +20,6 @@ def init_routes(app, mongo):
     def me():
         user_id = get_jwt_identity()
         user = mongo.find_user_by_id(user_id)
-        print(user)
         if not user:
             return jsonify({"msg": "User not found"}), 404
         # Return user info (exclude password)
@@ -31,23 +30,37 @@ def init_routes(app, mongo):
             "simulationsId": user.get("simulations_id", [])
         }), 200
 
-    @api.route('/login', methods=['POST'])
+    @app.route("/api/login", methods=["POST"])
     def login():
         data = request.get_json()
         email = data.get("email", "")
         password = data.get("password", "")
 
-        # Fetch user from your users collection
+        # 1) lookup user + verify password...
         user = mongo.find_user_by_email(email)
         if not user or not check_password_hash(user["password_hash"], password):
             return jsonify({"msg": "Bad email or password"}), 401
 
-        # create the JWT and set it in a cookie
-        access_token = create_access_token(identity=str(user["_id"]))
+        # 2) Create an access token and a refresh token
+        identity = str(user["_id"])
+        access_token = create_access_token(identity=identity)
+        refresh_token = create_refresh_token(identity=identity)
+
+        # 3) Build response and set both cookies
         resp = jsonify({"msg": "Login successful"})
         set_access_cookies(resp, access_token)
+        set_refresh_cookies(resp, refresh_token)
         return resp, 200
-
+    
+    @app.route("/api/refresh", methods=["POST"])
+    @jwt_required(refresh=True)
+    def refresh():
+        # Because @jwt_required(refresh=True) passed, get_jwt_identity() is from the refresh token:
+        identity = get_jwt_identity()
+        new_access_token = create_access_token(identity=identity)
+        resp = jsonify({"msg": "Token refreshed"})
+        set_access_cookies(resp, new_access_token)
+        return resp, 200
     
     @api.route('/signup', methods=['POST'])
     def signup():
@@ -116,13 +129,15 @@ def init_routes(app, mongo):
     @jwt_required()
     def run_simulation(sim_id):
         # Retrieve the simulation
-        simulation = mongo.get_simulation(sim_id)
-        if simulation is None:
+        simulation_mongo = mongo.get_simulation(sim_id)
+        if simulation_mongo is None:
             abort(404, description="Simulation not found")
 
-        payload = simulation.copy()
+        simulation_data = simulation_mongo.copy()
         # 1) Turn the Mongo _id into a str
-        payload['id'] = str(payload.pop('_id'))
+        simulation_data['id'] = str(simulation_data.pop('_id'))
+
+        simulation: Simulation = create_simulation_from_dict(simulation_data)
 
         # Check that the user owns it
         user_id = get_jwt_identity()
@@ -136,11 +151,11 @@ def init_routes(app, mongo):
         # Start async task
         callback_url = request.url_root
         task = run_project.apply_async(
-            args=(payload, user_id),
+            args=(simulation.to_dict(), user_id),
             kwargs={'callback_url': callback_url}
         )
 
-        return jsonify({"task_id": task.id, "simulation_id": sim_id}), 202
+        return jsonify({"task_id": task.id, "simulation_id": sim_id, "simulation": simulation.to_dict()}), 202
 
     # GET: Retrieve a simulation by id (protected)
     @api.route('/simulations/<sim_id>', methods=['GET'])
@@ -170,7 +185,7 @@ def init_routes(app, mongo):
             abort(403, description="Not authorized to modify this simulation")
 
         # Ensure status-related fields are reset
-        update_data["status"] = "Saved"
+        update_data["status"] = "Pending"
         update_data["result"] = None
         update_data["logs"] = None
 

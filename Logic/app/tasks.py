@@ -1,7 +1,7 @@
 import requests
 from .run_project import Simulation, run_project as actual_run_project
 from app.celery_instance import celery
-from .Classes import Simulation, from_dict
+from .Classes import Simulation, create_simulation_from_dict
 from .utils import parse_results
 from .config import Config
 from flask_jwt_extended import create_access_token
@@ -14,7 +14,8 @@ _db = _client.get_default_database()
 @celery.task
 def run_project(simulation_data: dict, user_id: str, callback_url: str):
     # --- Rebuild and run the simulation locally ---
-    simulation: Simulation = from_dict(simulation_data)
+    simulation: Simulation = create_simulation_from_dict(simulation_data)
+    print(simulation)
     actual_run_project(simulation)
     logs, results = parse_results(simulation.id, simulation.name)
 

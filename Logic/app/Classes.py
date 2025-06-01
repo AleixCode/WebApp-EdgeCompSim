@@ -131,7 +131,7 @@ def create_simulation_from_json(data: dict) -> Simulation:
     
     return simulation
 
-def from_dict(data: dict) -> Simulation:
+def create_simulation_from_dict(data: dict) -> Simulation:
     possible_jobs = [PossibleJob(**job) for job in data["possible_jobs"]]
     job_distributions = [JobDistribution(**dist) for dist in data["job_distributions"]]
     servers = [Server(**server) for server in data["servers"]]
@@ -146,5 +146,7 @@ def from_dict(data: dict) -> Simulation:
         possible_jobs=possible_jobs,
         job_distributions=job_distributions,
         servers=servers,
-        sim_id=data.get("id")  # if id is present, include it
+        sim_id=data.get("id"),  # if id is present, include it
+        results=data.get("results"),
+        logs=data.get("logs"),
     )
