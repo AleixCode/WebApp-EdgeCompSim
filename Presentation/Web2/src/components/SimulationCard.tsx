@@ -17,7 +17,11 @@ import {
   runSimulation,
   updateSimulation,
 } from "../api/backendClient";
-import { SimulationData, CreateSimulationPayload } from "../interfaces";
+import {
+  SimulationData,
+  CreateSimulationPayload,
+  ResultsSimulationData,
+} from "../interfaces";
 import CreateSimulation from "./CreateSimulation";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -27,13 +31,13 @@ interface SimulationsCardProps {
   title: string;
   status: Status;
   simulationId: string;
-  simulation: SimulationData;
+  simulation: SimulationData; // if results are available, simulation should be of type ResultsSimulationData
 }
 
 const statusColorMap: Record<Status, string> = {
-  Pending: "#ef5350", // red
-  Running: "#ffb300", // amber
-  Finished: "#66bb6a", // green
+  Pending: "#ef5350",
+  Running: "#ffb300",
+  Finished: "#66bb6a",
 };
 
 export default function SimulationsCard({
@@ -45,10 +49,14 @@ export default function SimulationsCard({
   const { updateUserData } = useAuth();
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Build initialData from simulation for editing.
-  const initialData: CreateSimulationPayload = {
+  // Build initialData for editing/viewing.
+  const initialData: CreateSimulationPayload & {
+    results?: string;
+    logs?: string;
+  } = {
     formData: {
       name: simulation.name,
       time: simulation.time,
@@ -61,9 +69,14 @@ export default function SimulationsCard({
     possibleJobs: simulation.possible_jobs,
     jobDistributions: simulation.job_distributions,
     servers: simulation.servers,
+    // Map either "results" or fallback to "result"
+    results:
+      (simulation as ResultsSimulationData).results ||
+      (simulation as any).result ||
+      undefined,
+    logs: (simulation as ResultsSimulationData).logs,
   };
 
-  // Save the edited simulation payload.
   const handleEditSave = async (updatedPayload: CreateSimulationPayload) => {
     setLoading(true);
     try {
@@ -124,7 +137,7 @@ export default function SimulationsCard({
             }}
           >
             {status !== "Pending" && (
-              <IonButton color="primary" onClick={handleRun}>
+              <IonButton color="primary" onClick={() => setShowViewModal(true)}>
                 View
               </IonButton>
             )}
@@ -173,6 +186,20 @@ export default function SimulationsCard({
           <CreateSimulation
             initialData={initialData}
             onCreate={handleEditSave}
+          />
+        </IonContent>
+      </IonModal>
+
+      <IonModal
+        isOpen={showViewModal}
+        onDidDismiss={() => setShowViewModal(false)}
+      >
+        <IonContent>
+          <CreateSimulation
+            initialData={initialData}
+            readOnly={true}
+            onCreate={() => {}}
+            simId={simulationId}
           />
         </IonContent>
       </IonModal>

@@ -14,7 +14,7 @@ export async function createSimulation(
   onSuccessUpdateUserData?: () => Promise<void>
 ) {
   const newPayload = transformPayload(payload);
-  const res = await fetch(`${API_BASE}/simulations`, {
+  const res = await fetchWithRefresh(`${API_BASE}/simulations`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newPayload),
@@ -44,7 +44,7 @@ export async function runSimulation(
   simId: string,
   onSuccessUpdateUserData?: () => Promise<void>
 ) {
-  const res = await fetch(`${API_BASE}/simulations/${simId}/run`, {
+  const res = await fetchWithRefresh(`${API_BASE}/simulations/${simId}/run`, {
     method: "POST",
     credentials: "include", // important to include cookies for JWT
   });
@@ -67,7 +67,7 @@ export async function runSimulation(
  * Get a single simulation by ID
  */
 export async function getSimulation(id: string) {
-  const res = await fetch(`${API_BASE}/simulations/${id}`, {
+  const res = await fetchWithRefresh(`${API_BASE}/simulations/${id}`, {
     method: "GET",
     credentials: "include",
   });
@@ -84,7 +84,7 @@ export async function updateSimulation(
   onSuccessUpdateUserData?: () => Promise<void>
 ) {
   const payload = transformUpdatePayload(data);
-  const res = await fetch(`${API_BASE}/simulations/${id}`, {
+  const res = await fetchWithRefresh(`${API_BASE}/simulations/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -109,7 +109,7 @@ export async function deleteSimulation(
   id: string,
   onSuccessUpdateUserData?: () => Promise<void>
 ) {
-  const res = await fetch(`${API_BASE}/simulations/${id}`, {
+  const res = await fetchWithRefresh(`${API_BASE}/simulations/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -196,6 +196,39 @@ function transformUpdatePayload(input: any): any {
   }
 
   return output;
+}
+
+// src/api.ts
+export async function fetchWithRefresh(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<Response> {
+  // First attempt:
+  let resp = await fetch(input, {
+    ...init,
+    credentials: "include", // always include cookies
+  });
+
+  if (resp.status === 401) {
+    // 1) access_token expired → call /api/refresh to get a new access_token
+    const r = await fetch("http://localhost:5000/api/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!r.ok) {
+      // both tokens are now invalid (e.g. refresh also expired). Force logout.
+      throw new Error("Authentication expired");
+    }
+    // new access_token cookie is set automatically in the response
+    // 2) retry the original request:
+    resp = await fetch(input, {
+      ...init,
+      credentials: "include",
+    });
+    return resp;
+  }
+
+  return resp;
 }
 
 // You can add more endpoints here...

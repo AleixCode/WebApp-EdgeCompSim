@@ -21,6 +21,7 @@ interface Props {
   onAdd: (dist: JobDistribution) => void;
   onRemove: (index: number) => void;
   onValidChange: (isValid: boolean) => void;
+  readOnly: boolean;
 }
 
 export default function JobDistributionsForm({
@@ -29,6 +30,7 @@ export default function JobDistributionsForm({
   onAdd,
   onRemove,
   onValidChange,
+  readOnly,
 }: Props) {
   // Local state: store inputs as strings so that the form starts empty.
   const [localInitial, setLocalInitial] = useState("");
@@ -102,7 +104,7 @@ export default function JobDistributionsForm({
 
     // Check for consecutive intervals with no gaps/overlaps.
     for (let i = 0; i < sorted.length - 1; i++) {
-      if (sorted[i].final_time !== sorted[i + 1].initial_time) {
+      if (sorted[i].final_time !== sorted[i + 1].initial_time - 1) {
         globalErrors.push("Distributions must not have gaps or overlaps.");
         break; // one error is sufficient.
       }
@@ -145,63 +147,75 @@ export default function JobDistributionsForm({
 
   return (
     <IonList>
-      <IonListHeader>
-        <IonLabel>Add Job Distribution</IonLabel>
-      </IonListHeader>
+      {!readOnly && (
+        <>
+          <IonListHeader>
+            <IonLabel>Add Job Distribution</IonLabel>
+          </IonListHeader>
 
-      {/* Input for Initial Time */}
-      <IonItem>
-        <IonLabel position="stacked">Initial Time</IonLabel>
-        <IonInput
-          type="number"
-          value={localInitial}
-          placeholder="Enter initial time"
-          onIonInput={(e) => setLocalInitial(e.detail.value!)}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, initial: true }))}
-        />
-      </IonItem>
-      {initialError && <ErrorText text={initialError} />}
+          <IonItem>
+            <IonLabel position="stacked">Initial Time</IonLabel>
+            <IonInput
+              disabled={readOnly}
+              type="number"
+              value={localInitial}
+              placeholder="Enter initial time"
+              onIonInput={(e) => setLocalInitial(e.detail.value!)}
+              onIonBlur={() =>
+                setTouched((prev) => ({ ...prev, initial: true }))
+              }
+            />
+          </IonItem>
+          {initialError && <ErrorText text={initialError} />}
 
-      {/* Input for Final Time */}
-      <IonItem>
-        <IonLabel position="stacked">Final Time</IonLabel>
-        <IonInput
-          type="number"
-          value={localFinal}
-          placeholder="Enter final time"
-          onIonInput={(e) => setLocalFinal(e.detail.value!)}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, final: true }))}
-        />
-      </IonItem>
-      {finalError && <ErrorText text={finalError} />}
+          {/* Input for Final Time */}
+          <IonItem>
+            <IonLabel position="stacked">Final Time</IonLabel>
+            <IonInput
+              disabled={readOnly}
+              type="number"
+              value={localFinal}
+              placeholder="Enter final time"
+              onIonInput={(e) => setLocalFinal(e.detail.value!)}
+              onIonBlur={() => setTouched((prev) => ({ ...prev, final: true }))}
+            />
+          </IonItem>
+          {finalError && <ErrorText text={finalError} />}
 
-      {/* Input for Jobs per minute */}
-      <IonItem>
-        <IonLabel position="stacked">Jobs per minute</IonLabel>
-        <IonInput
-          type="number"
-          value={localProb}
-          placeholder="Enter Jobs per minute must be bigger or equal than 0"
-          onIonInput={(e) => setLocalProb(e.detail.value!)}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, prob: true }))}
-        />
-      </IonItem>
-      {probError && <ErrorText text={probError} />}
+          {/* Input for Jobs per minute */}
+          <IonItem>
+            <IonLabel position="stacked">Jobs per minute</IonLabel>
+            <IonInput
+              disabled={readOnly}
+              type="number"
+              value={localProb}
+              placeholder="Enter Jobs per minute must be bigger or equal than 0"
+              onIonInput={(e) => setLocalProb(e.detail.value!)}
+              onIonBlur={() => setTouched((prev) => ({ ...prev, prob: true }))}
+            />
+          </IonItem>
+          {probError && <ErrorText text={probError} />}
 
-      {/* Button to add the distribution */}
-      <IonButton expand="full" onClick={handleAdd} disabled={!isLocalValid}>
-        Add Distribution
-      </IonButton>
+          {/* Button to add the distribution */}
+          <IonButton
+            expand="full"
+            onClick={handleAdd}
+            disabled={!isLocalValid || readOnly}
+          >
+            Add Distribution
+          </IonButton>
 
-      {/* Display any global errors (applied to the whole distributions list) */}
-      {globalErrors.length > 0 && (
-        <IonText color="danger">
-          {globalErrors.map((err, idx) => (
-            <p key={idx} style={{ margin: "4px 16px" }}>
-              {err}
-            </p>
-          ))}
-        </IonText>
+          {/* Display any global errors (applied to the whole distributions list) */}
+          {globalErrors.length > 0 && (
+            <IonText color="danger">
+              {globalErrors.map((err, idx) => (
+                <p key={idx} style={{ margin: "4px 16px" }}>
+                  {err}
+                </p>
+              ))}
+            </IonText>
+          )}
+        </>
       )}
 
       {/* Display the list of added distributions with a remove button */}
@@ -216,7 +230,11 @@ export default function JobDistributionsForm({
                 [{d.initial_time} – {d.final_time}] Jobs per minute:{" "}
                 {d.probability}
               </IonLabel>
-              <IonButton color="danger" onClick={() => onRemove(i)}>
+              <IonButton
+                disabled={readOnly}
+                color="danger"
+                onClick={() => onRemove(i)}
+              >
                 Remove
               </IonButton>
             </IonItem>

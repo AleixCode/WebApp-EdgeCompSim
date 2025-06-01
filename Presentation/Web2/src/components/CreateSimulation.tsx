@@ -28,14 +28,22 @@ import type {
   Server,
 } from "../interfaces";
 
+type Tab = "general" | "jobs" | "dist" | "servers" | "results";
+
+interface CreateSimulationProps {
+  onCreate: (data: CreateSimulationPayload) => void;
+  initialData?: CreateSimulationPayload & { results?: any; logs?: any };
+  readOnly?: boolean;
+  simId?: string; // simulation id for fetching images in view mode.
+}
+
 export default function CreateSimulation({
   onCreate,
   initialData,
-}: {
-  onCreate: (data: CreateSimulationPayload) => void;
-  initialData?: CreateSimulationPayload;
-}) {
-  // Initialize from initialData if provided; otherwise, use empty defaults.
+  readOnly = false,
+  simId,
+}: CreateSimulationProps) {
+  // Initialize state from initialData if provided.
   const [formData, setFormData] = useState<GeneralSimulationData>(
     initialData?.formData ?? {
       name: "",
@@ -55,11 +63,11 @@ export default function CreateSimulation({
   );
   const [servers, setServers] = useState<Server[]>(initialData?.servers ?? []);
 
-  // Local tab state.
-  const [tab, setTab] = useState<"general" | "jobs" | "dist" | "servers">(
-    "general"
-  );
-  // Track per‑tab validity.
+  // In readOnly mode, default to "results" tab; otherwise, "general"
+  const initialTab: Tab = readOnly ? "results" : "general";
+  const [tab, setTab] = useState<Tab>(initialTab);
+
+  // Validity flags (only used when not readOnly)
   const [validTabs, setValidTabs] = useState({
     general: false,
     jobs: false,
@@ -67,7 +75,6 @@ export default function CreateSimulation({
     servers: false,
   });
 
-  // Use memoized callbacks for subform validity.
   const handleGeneralValid = useCallback(
     (valid: boolean) => setValidTabs((v) => ({ ...v, general: valid })),
     []
@@ -85,7 +92,6 @@ export default function CreateSimulation({
     []
   );
 
-  // Update general data.
   const handleFormChange = <K extends keyof GeneralSimulationData>(
     field: K,
     value: GeneralSimulationData[K]
@@ -93,25 +99,38 @@ export default function CreateSimulation({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Only allow submission once every subform is valid and each section has at least one item.
+  // Only allow submission when not readOnly.
   const canSubmit =
+    !readOnly &&
     Object.values(validTabs).every((v) => v) &&
     possibleJobs.length > 0 &&
     jobDistributions.length > 0 &&
     servers.length > 0;
+
+  const handleSave = () => {
+    if (!readOnly) {
+      onCreate({ formData, possibleJobs, jobDistributions, servers });
+    }
+  };
+
+  const capitalize = (str: string) =>
+    str.charAt(0).toUpperCase() + str.slice(1);
+
+  // State for toggling logs view.
+  const [logsExpanded, setLogsExpanded] = useState(false);
 
   return (
     <IonCard>
       <IonCardHeader>
         <IonToolbar>
           <IonCardTitle>
-            {initialData ? "Edit Simulation" : "Create Simulation"}
+            {readOnly ? "View Simulation" : "Create Simulation"}
           </IonCardTitle>
         </IonToolbar>
         <IonToolbar>
           <IonSegment
             value={tab}
-            onIonChange={(e) => setTab(e.detail.value as any)}
+            onIonChange={(e) => setTab(e.detail.value as Tab)}
             scrollable
           >
             <IonSegmentButton value="general">
@@ -138,19 +157,23 @@ export default function CreateSimulation({
                 {validTabs.servers && <IonIcon icon={checkmarkCircleOutline} />}
               </IonLabel>
             </IonSegmentButton>
+            {readOnly && (
+              <IonSegmentButton value="results">
+                <IonLabel>Results</IonLabel>
+              </IonSegmentButton>
+            )}
           </IonSegment>
         </IonToolbar>
       </IonCardHeader>
-
       <IonCardContent>
         {tab === "general" && (
           <GeneralForm
             formData={formData}
             onChange={handleFormChange}
             onValidChange={handleGeneralValid}
+            readOnly={readOnly}
           />
         )}
-
         {tab === "jobs" && (
           <PossibleJobsForm
             items={possibleJobs}
@@ -159,9 +182,9 @@ export default function CreateSimulation({
               setPossibleJobs((prev) => prev.filter((_, idx) => idx !== i))
             }
             onValidChange={handleJobsValid}
+            readOnly={readOnly}
           />
         )}
-
         {tab === "dist" && (
           <JobDistributionsForm
             simulationTime={formData.time}
@@ -171,9 +194,9 @@ export default function CreateSimulation({
               setJobDistributions((prev) => prev.filter((_, idx) => idx !== i))
             }
             onValidChange={handleDistsValid}
+            readOnly={readOnly}
           />
         )}
-
         {tab === "servers" && (
           <ServersForm
             items={servers}
@@ -182,25 +205,110 @@ export default function CreateSimulation({
               setServers((prev) => prev.filter((_, idx) => idx !== i))
             }
             onValidChange={handleServersValid}
+            readOnly={readOnly}
           />
         )}
-
-        <div style={{ marginTop: 24 }}>
-          <IonButton
-            expand="block"
-            onClick={() =>
-              onCreate({ formData, possibleJobs, jobDistributions, servers })
-            }
-            disabled={!canSubmit}
-          >
-            {initialData ? "Save Changes" : "Save Simulation"}
-          </IonButton>
-          {!canSubmit && (
-            <IonText color="medium">
-              Please complete all sections (tabs show a ✔︎ when valid).
-            </IonText>
-          )}
-        </div>
+        {tab === "results" && readOnly && (
+          <div style={{ padding: "16px" }}>
+            <h2>Simulation Results</h2>
+            {initialData?.results || initialData?.logs ? (
+              <>
+                {initialData.results && (
+                  <>
+                    <br></br>
+                    <h3>Results:</h3>
+                    <div>
+                      {Object.entries(initialData.results || {}).map(
+                        ([key, value]) => (
+                          <p key={key}>
+                            <strong>{capitalize(key)}:</strong> {value}
+                          </p>
+                        )
+                      )}
+                    </div>
+                    <br></br>
+                  </>
+                )}
+                {initialData.logs && (
+                  <>
+                    <h3>Logs:</h3>
+                    {/* <IonButton
+                      size="small"
+                      fill="outline"
+                      onClick={() => setLogsExpanded((prev) => !prev)}
+                    >
+                      {logsExpanded ? "Collapse Logs" : "Expand Logs"}
+                    </IonButton> */}
+                    <div
+                      style={{
+                        border: "1px solid #ccc",
+                        borderRadius: "4px",
+                        marginTop: "8px",
+                        padding: "8px",
+                        maxHeight: logsExpanded ? "none" : "150px",
+                        overflowY: "auto",
+                        backgroundColor: "#f7f7f7",
+                      }}
+                    >
+                      <pre style={{ whiteSpace: "pre-wrap" }}>
+                        {typeof initialData.logs === "string"
+                          ? initialData.logs
+                          : JSON.stringify(initialData.logs, null, 2)}
+                      </pre>
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <IonText>No results available.</IonText>
+            )}
+            {simId && (
+              <div style={{ marginTop: "16px" }}>
+                <h3>Simulation Charts</h3>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "16px",
+                    justifyContent: "center",
+                  }}
+                >
+                  <img
+                    src={`http://localhost:5000/api/download?filename=real_jobs_.png&sim_id=${simId}`}
+                    alt="Jobs Chart"
+                    style={{ maxWidth: "100%", height: "auto" }}
+                  />
+                  <img
+                    src={`http://localhost:5000/api/download?filename=real_servers_levels.png&sim_id=${simId}`}
+                    alt="Servers Levels Chart"
+                    style={{ maxWidth: "100%", height: "auto" }}
+                  />
+                  <img
+                    src={`http://localhost:5000/api/download?filename=real_servers_on.png&sim_id=${simId}`}
+                    alt="Servers On Chart"
+                    style={{ maxWidth: "100%", height: "auto" }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {!readOnly && (
+          <div style={{ marginTop: 24 }}>
+            <IonButton
+              expand="block"
+              onClick={handleSave}
+              disabled={!canSubmit}
+            >
+              Save Simulation
+            </IonButton>
+            {!canSubmit && (
+              <IonText color="medium">
+                Please complete all sections (tabs show a ✔︎ when valid).
+              </IonText>
+            )}
+          </div>
+        )}
       </IonCardContent>
     </IonCard>
   );

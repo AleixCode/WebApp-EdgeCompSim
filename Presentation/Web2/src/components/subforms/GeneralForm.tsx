@@ -18,12 +18,14 @@ interface Props {
     value: GeneralSimulationData[K]
   ) => void;
   onValidChange: (isValid: boolean) => void;
+  readOnly: boolean;
 }
 
 export default function GeneralForm({
   formData,
   onChange,
   onValidChange,
+  readOnly,
 }: Props) {
   // Use local states for all inputs so that they can be empty (displaying only placeholders)
   const [localName, setLocalName] = useState(formData.name);
@@ -137,6 +139,7 @@ export default function GeneralForm({
           placeholder="Enter Simulation Name"
           onIonInput={(e) => setLocalName(e.detail.value!)}
           onIonBlur={handleNameBlur}
+          disabled={readOnly}
         />
       </IonItem>
       {nameError && <ErrorText text={nameError} />}
@@ -150,6 +153,7 @@ export default function GeneralForm({
           placeholder="Enter Time (greater than 0)"
           onIonInput={(e) => setLocalTime(e.detail.value!)}
           onIonBlur={handleTimeBlur}
+          disabled={readOnly}
         />
       </IonItem>
       {timeError && <ErrorText text={timeError} />}
@@ -163,6 +167,7 @@ export default function GeneralForm({
           placeholder="Enter Exec Time (greater than 0)"
           onIonInput={(e) => setLocalExecTime(e.detail.value!)}
           onIonBlur={handleExecTimeBlur}
+          disabled={readOnly}
         />
       </IonItem>
       {execTimeError && <ErrorText text={execTimeError} />}
@@ -176,6 +181,7 @@ export default function GeneralForm({
           placeholder="Optional: Enter Seed Users (default 0)"
           onIonInput={(e) => setLocalSeedUsers(e.detail.value!)}
           onIonBlur={handleSeedUsersBlur}
+          disabled={readOnly}
         />
       </IonItem>
       {seedUsersError && <ErrorText text={seedUsersError} />}
@@ -189,6 +195,7 @@ export default function GeneralForm({
           placeholder="Optional: Enter Seed Servers (default 0)"
           onIonInput={(e) => setLocalSeedServers(e.detail.value!)}
           onIonBlur={handleSeedServersBlur}
+          disabled={readOnly}
         />
       </IonItem>
       {seedServersError && <ErrorText text={seedServersError} />}
@@ -201,6 +208,7 @@ export default function GeneralForm({
           style={selectStyles}
           value={formData.type_placement}
           onIonChange={(e) => onChange("type_placement", e.detail.value!)}
+          disabled={readOnly}
         >
           <IonSelectOption value={0}>Bin Packing</IonSelectOption>
           <IonSelectOption value={1}>Spread</IonSelectOption>

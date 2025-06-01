@@ -17,6 +17,7 @@ interface Props {
   onAdd: (server: Server) => void;
   onRemove: (index: number) => void;
   onValidChange: (isValid: boolean) => void;
+  readOnly: boolean;
 }
 
 export default function ServersForm({
@@ -24,6 +25,7 @@ export default function ServersForm({
   onAdd,
   onRemove,
   onValidChange,
+  readOnly,
 }: Props) {
   // The form fields are stored as strings so that they start empty.
   const initialServer = { cpu: "", mem: "", hdd: "", availability: "" };
@@ -118,83 +120,108 @@ export default function ServersForm({
 
   return (
     <IonList>
-      <IonListHeader>
-        <IonLabel>Add Server</IonLabel>
-      </IonListHeader>
+      {!readOnly && (
+        <>
+          <IonListHeader>
+            <IonLabel>Add Server</IonLabel>
+          </IonListHeader>
 
-      {/* CPU */}
-      <IonItem>
-        <IonLabel position="stacked">CPU</IonLabel>
-        <IonInput
-          type="number"
-          value={srv.cpu}
-          placeholder="Enter CPU"
-          onIonInput={(e) => setSrv({ ...srv, cpu: e.detail.value as string })}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, cpu: true }))}
-        />
-      </IonItem>
-      {cpuError && <ErrorText text={cpuError} />}
+          {/* CPU */}
+          <IonItem>
+            <IonLabel position="stacked">CPU</IonLabel>
+            <IonInput
+              type="number"
+              value={srv.cpu}
+              placeholder="Enter CPU"
+              onIonInput={(e) =>
+                setSrv({ ...srv, cpu: e.detail.value as string })
+              }
+              onIonBlur={() => setTouched((prev) => ({ ...prev, cpu: true }))}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {cpuError && <ErrorText text={cpuError} />}
 
-      {/* Memory */}
-      <IonItem>
-        <IonLabel position="stacked">Memory</IonLabel>
-        <IonInput
-          type="number"
-          value={srv.mem}
-          placeholder="Enter Memory"
-          onIonInput={(e) => setSrv({ ...srv, mem: e.detail.value as string })}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, mem: true }))}
-        />
-      </IonItem>
-      {memError && <ErrorText text={memError} />}
+          {/* Memory */}
+          <IonItem>
+            <IonLabel position="stacked">Memory</IonLabel>
+            <IonInput
+              type="number"
+              value={srv.mem}
+              placeholder="Enter Memory"
+              onIonInput={(e) =>
+                setSrv({ ...srv, mem: e.detail.value as string })
+              }
+              onIonBlur={() => setTouched((prev) => ({ ...prev, mem: true }))}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {memError && <ErrorText text={memError} />}
 
-      {/* HDD */}
-      <IonItem>
-        <IonLabel position="stacked">HDD</IonLabel>
-        <IonInput
-          type="number"
-          value={srv.hdd}
-          placeholder="Enter HDD"
-          onIonInput={(e) => setSrv({ ...srv, hdd: e.detail.value as string })}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, hdd: true }))}
-        />
-      </IonItem>
-      {hddError && <ErrorText text={hddError} />}
+          {/* HDD */}
+          <IonItem>
+            <IonLabel position="stacked">HDD</IonLabel>
+            <IonInput
+              type="number"
+              value={srv.hdd}
+              placeholder="Enter HDD"
+              onIonInput={(e) =>
+                setSrv({ ...srv, hdd: e.detail.value as string })
+              }
+              onIonBlur={() => setTouched((prev) => ({ ...prev, hdd: true }))}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {hddError && <ErrorText text={hddError} />}
 
-      {/* Availability */}
-      <IonItem>
-        <IonLabel position="stacked">Availability</IonLabel>
-        <IonSelect
-          value={srv.availability}
-          placeholder="Select Availability"
-          onIonChange={(e) => setSrv({ ...srv, availability: e.detail.value })}
-          onIonBlur={() =>
-            setTouched((prev) => ({ ...prev, availability: true }))
-          }
-        >
-          <IonSelectOption value="High">High Availability</IonSelectOption>
-          <IonSelectOption value="Medium">Medium Availability</IonSelectOption>
-          <IonSelectOption value="Low">Low Availability</IonSelectOption>
-        </IonSelect>
-      </IonItem>
-      {availabilityError && <ErrorText text={availabilityError} />}
+          {/* Availability */}
+          <IonItem>
+            <IonLabel position="stacked">Availability</IonLabel>
+            <IonSelect
+              value={srv.availability}
+              placeholder="Select Availability"
+              onIonChange={(e) =>
+                setSrv({ ...srv, availability: e.detail.value })
+              }
+              onIonBlur={() =>
+                setTouched((prev) => ({ ...prev, availability: true }))
+              }
+              disabled={readOnly}
+            >
+              <IonSelectOption value="High">High Availability</IonSelectOption>
+              <IonSelectOption value="Medium">
+                Medium Availability
+              </IonSelectOption>
+              <IonSelectOption value="Low">Low Availability</IonSelectOption>
+            </IonSelect>
+          </IonItem>
+          {availabilityError && <ErrorText text={availabilityError} />}
 
-      {/* Quantity */}
-      <IonItem>
-        <IonLabel position="stacked">Quantity</IonLabel>
-        <IonInput
-          type="number"
-          value={quantity}
-          placeholder="Enter Quantity (default 1)"
-          onIonInput={(e) => setQuantity(e.detail.value as string)}
-          onIonBlur={() => setTouched((prev) => ({ ...prev, quantity: true }))}
-        />
-      </IonItem>
-      {quantityError && <ErrorText text={quantityError} />}
+          {/* Quantity */}
+          <IonItem>
+            <IonLabel position="stacked">Quantity</IonLabel>
+            <IonInput
+              type="number"
+              value={quantity}
+              placeholder="Enter Quantity (default 1)"
+              onIonInput={(e) => setQuantity(e.detail.value as string)}
+              onIonBlur={() =>
+                setTouched((prev) => ({ ...prev, quantity: true }))
+              }
+              disabled={readOnly}
+            />
+          </IonItem>
+          {quantityError && <ErrorText text={quantityError} />}
 
-      <IonButton expand="full" onClick={handleAdd} disabled={!isInputValid}>
-        Add Server
-      </IonButton>
+          <IonButton
+            expand="full"
+            onClick={handleAdd}
+            disabled={!isInputValid || readOnly}
+          >
+            Add Server
+          </IonButton>
+        </>
+      )}
 
       {items.length > 0 && (
         <>
@@ -207,7 +234,12 @@ export default function ServersForm({
                 CPU: {s.cpu}, MEM: {s.mem}, HDD: {s.hdd}, Availability:{" "}
                 {s.availability}
               </IonLabel>
-              <IonButton color="danger" onClick={() => onRemove(i)}>
+
+              <IonButton
+                disabled={readOnly}
+                color="danger"
+                onClick={() => onRemove(i)}
+              >
                 Remove
               </IonButton>
             </IonItem>

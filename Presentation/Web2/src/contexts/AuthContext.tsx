@@ -1,3 +1,5 @@
+// src/contexts/AuthContext.tsx
+
 import React, {
   createContext,
   useState,
@@ -5,6 +7,7 @@ import React, {
   ReactNode,
   useContext,
 } from "react";
+import { fetchWithRefresh } from "../api/backendClient";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -26,7 +29,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-// Provide a default value for context
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function useAuth() {
@@ -38,16 +40,67 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState(null);
-
+  const [user, setUser] = useState<User | null>(null);
+  // On mount, try to load /api/me
   useEffect(() => {
-    fetch("http://localhost:5000/api/me", { credentials: "include" })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject("Not authenticated")
-      )
-      .then((data) => setUser(data))
-      .catch(() => setUser(null));
+    (async () => {
+      try {
+        const res = await fetchWithRefresh("http://localhost:5000/api/me", {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data: User = await res.json();
+          setUser(data);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch /api/me:", err);
+        setUser(null);
+      }
+    })();
   }, []);
+
+  // Periodic refresh every 4 minutes
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          // If refresh fails, log out
+          await logout();
+        } else {
+          // Optionally update user data after refreshing
+          await updateUserData();
+        }
+      } catch (err) {
+        console.error("Auto-refresh failed:", err);
+        await logout();
+      }
+    }, 1000 * 60 * 4); // every 4 minutes
+
+    return () => clearInterval(intervalId);
+  }, [user]); // only start/stop if `user` changes
+
+  const updateUserData = async () => {
+    try {
+      const res = await fetchWithRefresh("http://localhost:5000/api/me", {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data: User = await res.json();
+        setUser(data);
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      console.error("Failed to update user data:", err);
+      setUser(null);
+    }
+  };
 
   const signup = async (name: string, email: string, password: string) => {
     try {
@@ -57,22 +110,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         credentials: "include",
         body: JSON.stringify({ name, email, password }),
       });
-      if (!res.ok) throw new Error("Signup failed");
-      updateUserData();
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  };
 
-  const updateUserData = async () => {
-    try {
-      const meRes = await fetch("http://localhost:5000/api/me", {
-        credentials: "include",
-      });
-      if (meRes.ok) setUser(await meRes.json());
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Signup failed: ${errText}`);
+      }
+      // Immediately fetch /api/me to update user state
+      await updateUserData();
     } catch (err) {
-      console.error(err);
+      console.error("Signup error:", err);
       throw err;
     }
   };
@@ -85,27 +131,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
         credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) throw new Error("Login failed");
-      updateUserData();
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Login failed: ${errText}`);
+      }
+      // Immediately fetch /api/me to update user state
+      await updateUserData();
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       throw err;
     }
   };
 
   const logout = async () => {
-    await fetch("http://localhost:5000/api/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-    setUser(null);
+    try {
+      await fetch("http://localhost:5000/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    } finally {
+      setUser(null);
+    }
   };
 
-  const isAuthenticated = !!user;
+  const isAuthenticated = Boolean(user);
 
   return (
     <AuthContext.Provider
-      value={{ user, login, signup, logout, isAuthenticated, updateUserData }}
+      value={{ user, login, signup, logout, updateUserData, isAuthenticated }}
     >
       {children}
     </AuthContext.Provider>

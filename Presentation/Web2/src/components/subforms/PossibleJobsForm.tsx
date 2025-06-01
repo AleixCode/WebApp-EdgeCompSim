@@ -15,6 +15,7 @@ interface Props {
   onAdd: (job: Job) => void;
   onRemove: (index: number) => void;
   onValidChange: (isValid: boolean) => void;
+  readOnly: boolean;
 }
 
 export default function PossibleJobsForm({
@@ -22,6 +23,7 @@ export default function PossibleJobsForm({
   onAdd,
   onRemove,
   onValidChange,
+  readOnly,
 }: Props) {
   // Local state for the new job, stored as strings so that inputs start empty.
   const initialState = { cpu: "", mem: "", hdd: "", probability: "" };
@@ -114,81 +116,91 @@ export default function PossibleJobsForm({
 
   return (
     <IonList>
-      <IonListHeader>
-        <IonLabel>Add Possible Job</IonLabel>
-      </IonListHeader>
+      {!readOnly && (
+        <>
+          <IonListHeader>
+            <IonLabel>Add Possible Job</IonLabel>
+          </IonListHeader>
 
-      <IonItem>
-        <IonLabel position="stacked">CPU</IonLabel>
-        <IonInput
-          type="number"
-          value={job.cpu}
-          placeholder="Enter CPU"
-          onIonInput={(e) => setJob({ ...job, cpu: e.detail.value! })}
-          onIonBlur={() => setTouched({ ...touched, cpu: true })}
-        />
-      </IonItem>
-      {cpuError && (
-        <IonText color="danger">
-          <p style={{ margin: "4px 16px" }}>{cpuError}</p>
-        </IonText>
+          <IonItem>
+            <IonLabel position="stacked">CPU</IonLabel>
+            <IonInput
+              type="number"
+              value={job.cpu}
+              placeholder="Enter CPU"
+              onIonInput={(e) => setJob({ ...job, cpu: e.detail.value! })}
+              onIonBlur={() => setTouched({ ...touched, cpu: true })}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {cpuError && (
+            <IonText color="danger">
+              <p style={{ margin: "4px 16px" }}>{cpuError}</p>
+            </IonText>
+          )}
+
+          <IonItem>
+            <IonLabel position="stacked">Memory</IonLabel>
+            <IonInput
+              type="number"
+              value={job.mem}
+              placeholder="Enter Memory"
+              onIonInput={(e) => setJob({ ...job, mem: e.detail.value! })}
+              onIonBlur={() => setTouched({ ...touched, mem: true })}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {memError && (
+            <IonText color="danger">
+              <p style={{ margin: "4px 16px" }}>{memError}</p>
+            </IonText>
+          )}
+
+          <IonItem>
+            <IonLabel position="stacked">HDD</IonLabel>
+            <IonInput
+              type="number"
+              value={job.hdd}
+              placeholder="Enter HDD"
+              onIonInput={(e) => setJob({ ...job, hdd: e.detail.value! })}
+              onIonBlur={() => setTouched({ ...touched, hdd: true })}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {hddError && (
+            <IonText color="danger">
+              <p style={{ margin: "4px 16px" }}>{hddError}</p>
+            </IonText>
+          )}
+
+          <IonItem>
+            <IonLabel position="stacked">Probability (0–1)</IonLabel>
+            <IonInput
+              type="number"
+              value={job.probability}
+              placeholder="Enter Probability"
+              onIonInput={(e) =>
+                setJob({ ...job, probability: e.detail.value! })
+              }
+              onIonBlur={() => setTouched({ ...touched, probability: true })}
+              disabled={readOnly}
+            />
+          </IonItem>
+          {probabilityError && (
+            <IonText color="danger">
+              <p style={{ margin: "4px 16px" }}>{probabilityError}</p>
+            </IonText>
+          )}
+
+          <IonButton
+            expand="full"
+            onClick={handleAdd}
+            disabled={!isJobInputFilled || !isJobInputValid || readOnly}
+          >
+            Add Job
+          </IonButton>
+        </>
       )}
-
-      <IonItem>
-        <IonLabel position="stacked">Memory</IonLabel>
-        <IonInput
-          type="number"
-          value={job.mem}
-          placeholder="Enter Memory"
-          onIonInput={(e) => setJob({ ...job, mem: e.detail.value! })}
-          onIonBlur={() => setTouched({ ...touched, mem: true })}
-        />
-      </IonItem>
-      {memError && (
-        <IonText color="danger">
-          <p style={{ margin: "4px 16px" }}>{memError}</p>
-        </IonText>
-      )}
-
-      <IonItem>
-        <IonLabel position="stacked">HDD</IonLabel>
-        <IonInput
-          type="number"
-          value={job.hdd}
-          placeholder="Enter HDD"
-          onIonInput={(e) => setJob({ ...job, hdd: e.detail.value! })}
-          onIonBlur={() => setTouched({ ...touched, hdd: true })}
-        />
-      </IonItem>
-      {hddError && (
-        <IonText color="danger">
-          <p style={{ margin: "4px 16px" }}>{hddError}</p>
-        </IonText>
-      )}
-
-      <IonItem>
-        <IonLabel position="stacked">Probability (0–1)</IonLabel>
-        <IonInput
-          type="number"
-          value={job.probability}
-          placeholder="Enter Probability"
-          onIonInput={(e) => setJob({ ...job, probability: e.detail.value! })}
-          onIonBlur={() => setTouched({ ...touched, probability: true })}
-        />
-      </IonItem>
-      {probabilityError && (
-        <IonText color="danger">
-          <p style={{ margin: "4px 16px" }}>{probabilityError}</p>
-        </IonText>
-      )}
-
-      <IonButton
-        expand="full"
-        onClick={handleAdd}
-        disabled={!isJobInputFilled || !isJobInputValid}
-      >
-        Add Job
-      </IonButton>
 
       {/* Global error message about the sum of probabilities */}
       {items.length > 0 && Math.abs(totalProbability - 1) >= 0.0001 && (
@@ -211,7 +223,11 @@ export default function PossibleJobsForm({
               <IonLabel>
                 {`CPU: ${j.cpu}, MEM: ${j.mem}, HDD: ${j.hdd}, Prob: ${j.probability}`}
               </IonLabel>
-              <IonButton color="danger" onClick={() => onRemove(i)}>
+              <IonButton
+                disabled={readOnly}
+                color="danger"
+                onClick={() => onRemove(i)}
+              >
                 Remove
               </IonButton>
             </IonItem>
