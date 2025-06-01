@@ -76,10 +76,7 @@ export default function JobDistributionsForm({
   let probError = "";
   if (touched.prob && localProb.trim() === "") {
     probError = "Jobs per minute is required.";
-  } else if (
-    touched.prob &&
-    (Number(localProb) <= 0 || Number(localProb) > 1)
-  ) {
+  } else if (touched.prob && Number(localProb) <= 0) {
     probError = "Jobs per minute must be bigger than 0.";
   }
 

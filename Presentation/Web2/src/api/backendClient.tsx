@@ -83,11 +83,12 @@ export async function updateSimulation(
   data: any,
   onSuccessUpdateUserData?: () => Promise<void>
 ) {
+  const payload = transformUpdatePayload(data);
   const res = await fetch(`${API_BASE}/simulations/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) throw new Error(await res.text());
@@ -164,6 +165,37 @@ function transformPayload(input: any): any {
       availability: availabilityMap[s.availability] || s.availability,
     })),
   };
+}
+
+function transformUpdatePayload(input: any): any {
+  const output: any = {};
+
+  if (input.formData) {
+    Object.assign(output, input.formData);
+  }
+
+  if (input.possibleJobs) {
+    output.possible_jobs = input.possibleJobs;
+  }
+
+  if (input.jobDistributions) {
+    output.job_distributions = input.jobDistributions;
+  }
+
+  if (input.servers) {
+    const availabilityMap: Record<string, string> = {
+      Low: "L",
+      Medium: "M",
+      High: "H",
+    };
+
+    output.servers = input.servers.map((s: any) => ({
+      ...s,
+      availability: availabilityMap[s.availability] || s.availability,
+    }));
+  }
+
+  return output;
 }
 
 // You can add more endpoints here...

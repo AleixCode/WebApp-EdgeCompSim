@@ -1,3 +1,4 @@
+// SimulationsCard.tsx
 import React, { useState } from "react";
 import {
   IonCard,
@@ -9,16 +10,14 @@ import {
   IonAlert,
   IonModal,
   IonLoading,
-  IonInput,
-  IonItem,
-  IonLabel,
+  IonContent,
 } from "@ionic/react";
 import {
   deleteSimulation,
   runSimulation,
   updateSimulation,
 } from "../api/backendClient";
-import { SimulationData } from "../interfaces";
+import { SimulationData, CreateSimulationPayload } from "../interfaces";
 import CreateSimulation from "./CreateSimulation";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -44,15 +43,38 @@ export default function SimulationsCard({
   simulation,
 }: SimulationsCardProps) {
   const { updateUserData } = useAuth();
-  // Local state for showing modals, alerts, and managing loading states.
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Fields for the edit form. You might have additional fields.
-  const [editTitle, setEditTitle] = useState(title);
+  // Build initialData from simulation for editing.
+  const initialData: CreateSimulationPayload = {
+    formData: {
+      name: simulation.name,
+      time: simulation.time,
+      exec_time: simulation.exec_time,
+      seed_users: simulation.seed_users,
+      seed_servers: simulation.seed_servers,
+      type_exec: simulation.type_exec,
+      type_placement: simulation.type_placement,
+    },
+    possibleJobs: simulation.possible_jobs,
+    jobDistributions: simulation.job_distributions,
+    servers: simulation.servers,
+  };
 
-  // Handling running a simulation
+  // Save the edited simulation payload.
+  const handleEditSave = async (updatedPayload: CreateSimulationPayload) => {
+    setLoading(true);
+    try {
+      await updateSimulation(simulationId, updatedPayload, updateUserData);
+    } catch (error) {
+      console.error("Failed to update simulation:", error);
+    }
+    setLoading(false);
+    setShowEditModal(false);
+  };
+
   const handleRun = async () => {
     setLoading(true);
     try {
@@ -63,7 +85,6 @@ export default function SimulationsCard({
     setLoading(false);
   };
 
-  // Handling deletion with confirmation
   const handleDelete = async () => {
     setLoading(true);
     try {
@@ -73,25 +94,6 @@ export default function SimulationsCard({
     }
     setLoading(false);
     setShowDeleteAlert(false);
-  };
-
-  // Handling saving of edited simulation details
-  const handleEditSave = async () => {
-    setLoading(true);
-    try {
-      // Adjust the updateSimulation call based on your API.
-      await updateSimulation(
-        simulationId,
-        {
-          title: editTitle,
-        },
-        updateUserData
-      );
-    } catch (error) {
-      console.error("Failed to update simulation:", error);
-    }
-    setLoading(false);
-    setShowEditModal(false);
   };
 
   return (
@@ -109,10 +111,9 @@ export default function SimulationsCard({
           <IonCardSubtitle
             style={{ fontWeight: 600, color: statusColorMap[status] }}
           >
-            Status: {status.charAt(0).toUpperCase() + status.slice(1)}
+            Status: {status}
           </IonCardSubtitle>
         </IonCardHeader>
-
         <IonCardContent>
           <div
             style={{
@@ -123,45 +124,36 @@ export default function SimulationsCard({
             }}
           >
             {status !== "Pending" && (
-              <>
-                <IonButton color="primary" onClick={handleRun}>
-                  View
-                </IonButton>
-              </>
+              <IonButton color="primary" onClick={handleRun}>
+                View
+              </IonButton>
             )}
             {status !== "Running" && (
-              <>
-                <IonButton
-                  fill="outline"
-                  color="medium"
-                  onClick={() => setShowEditModal(true)}
-                >
-                  Edit
-                </IonButton>
-              </>
+              <IonButton
+                fill="outline"
+                color="medium"
+                onClick={() => setShowEditModal(true)}
+              >
+                Edit
+              </IonButton>
             )}
             {status === "Pending" && (
-              <>
-                <IonButton color="primary" onClick={handleRun}>
-                  Run
-                </IonButton>
-              </>
+              <IonButton color="primary" onClick={handleRun}>
+                Run
+              </IonButton>
             )}
             {status !== "Running" && (
-              <>
-                <IonButton
-                  color="danger"
-                  onClick={() => setShowDeleteAlert(true)}
-                >
-                  Delete
-                </IonButton>
-              </>
+              <IonButton
+                color="danger"
+                onClick={() => setShowDeleteAlert(true)}
+              >
+                Delete
+              </IonButton>
             )}
           </div>
         </IonCardContent>
       </IonCard>
 
-      {/* Delete Confirmation Alert */}
       <IonAlert
         isOpen={showDeleteAlert}
         onDidDismiss={() => setShowDeleteAlert(false)}
@@ -173,15 +165,18 @@ export default function SimulationsCard({
         ]}
       />
 
-      {/* Edit Simulation Modal */}
       <IonModal
         isOpen={showEditModal}
         onDidDismiss={() => setShowEditModal(false)}
       >
-        <CreateSimulation onCreate={handleEditSave} />
+        <IonContent>
+          <CreateSimulation
+            initialData={initialData}
+            onCreate={handleEditSave}
+          />
+        </IonContent>
       </IonModal>
 
-      {/* Global Loading Indicator */}
       <IonLoading isOpen={loading} message={"Please wait..."} />
     </>
   );

@@ -28,9 +28,14 @@ export interface GeneralSimulationData {
 export interface SimulationData extends GeneralSimulationData {
   id: string;
   status: Status;
-  jobs: Job[];
+  possible_jobs: Job[];
   job_distributions: JobDistribution[];
   servers: Server[];
+}
+
+export interface ResultsSimulationData extends SimulationData {
+  results?: string;
+  logs?: string;
 }
 
 export interface CreateSimulationPayload {

@@ -1,3 +1,4 @@
+// CreateSimulation.tsx
 import React, { useState, useCallback } from "react";
 import {
   IonCard,
@@ -29,30 +30,36 @@ import type {
 
 export default function CreateSimulation({
   onCreate,
+  initialData,
 }: {
   onCreate: (data: CreateSimulationPayload) => void;
+  initialData?: CreateSimulationPayload;
 }) {
+  // Initialize from initialData if provided; otherwise, use empty defaults.
+  const [formData, setFormData] = useState<GeneralSimulationData>(
+    initialData?.formData ?? {
+      name: "",
+      time: 0,
+      exec_time: 0,
+      seed_users: 0,
+      seed_servers: 0,
+      type_exec: 0,
+      type_placement: 0,
+    }
+  );
+  const [possibleJobs, setPossibleJobs] = useState<Job[]>(
+    initialData?.possibleJobs ?? []
+  );
+  const [jobDistributions, setJobDistributions] = useState<JobDistribution[]>(
+    initialData?.jobDistributions ?? []
+  );
+  const [servers, setServers] = useState<Server[]>(initialData?.servers ?? []);
+
+  // Local tab state.
   const [tab, setTab] = useState<"general" | "jobs" | "dist" | "servers">(
     "general"
   );
-
-  // form data
-  const [formData, setFormData] = useState<GeneralSimulationData>({
-    name: "",
-    time: 0,
-    exec_time: 0,
-    seed_users: 0,
-    seed_servers: 0,
-    type_exec: 0,
-    type_placement: 0,
-  });
-  const [possibleJobs, setPossibleJobs] = useState<Job[]>([]);
-  const [jobDistributions, setJobDistributions] = useState<JobDistribution[]>(
-    []
-  );
-  const [servers, setServers] = useState<Server[]>([]);
-
-  // track tab validity
+  // Track per‑tab validity.
   const [validTabs, setValidTabs] = useState({
     general: false,
     jobs: false,
@@ -60,7 +67,7 @@ export default function CreateSimulation({
     servers: false,
   });
 
-  // Memoized callbacks to avoid infinite loops
+  // Use memoized callbacks for subform validity.
   const handleGeneralValid = useCallback(
     (valid: boolean) => setValidTabs((v) => ({ ...v, general: valid })),
     []
@@ -78,6 +85,7 @@ export default function CreateSimulation({
     []
   );
 
+  // Update general data.
   const handleFormChange = <K extends keyof GeneralSimulationData>(
     field: K,
     value: GeneralSimulationData[K]
@@ -85,6 +93,7 @@ export default function CreateSimulation({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Only allow submission once every subform is valid and each section has at least one item.
   const canSubmit =
     Object.values(validTabs).every((v) => v) &&
     possibleJobs.length > 0 &&
@@ -95,7 +104,9 @@ export default function CreateSimulation({
     <IonCard>
       <IonCardHeader>
         <IonToolbar>
-          <IonCardTitle>Create Simulation</IonCardTitle>
+          <IonCardTitle>
+            {initialData ? "Edit Simulation" : "Create Simulation"}
+          </IonCardTitle>
         </IonToolbar>
         <IonToolbar>
           <IonSegment
@@ -143,9 +154,9 @@ export default function CreateSimulation({
         {tab === "jobs" && (
           <PossibleJobsForm
             items={possibleJobs}
-            onAdd={(item) => setPossibleJobs([...possibleJobs, item])}
-            onRemove={(i: number) =>
-              setPossibleJobs(possibleJobs.filter((_, idx) => idx !== i))
+            onAdd={(item) => setPossibleJobs((prev) => [...prev, item])}
+            onRemove={(i) =>
+              setPossibleJobs((prev) => prev.filter((_, idx) => idx !== i))
             }
             onValidChange={handleJobsValid}
           />
@@ -155,11 +166,9 @@ export default function CreateSimulation({
           <JobDistributionsForm
             simulationTime={formData.time}
             items={jobDistributions}
-            onAdd={(item) => setJobDistributions([...jobDistributions, item])}
-            onRemove={(i: number) =>
-              setJobDistributions(
-                jobDistributions.filter((_, idx) => idx !== i)
-              )
+            onAdd={(item) => setJobDistributions((prev) => [...prev, item])}
+            onRemove={(i) =>
+              setJobDistributions((prev) => prev.filter((_, idx) => idx !== i))
             }
             onValidChange={handleDistsValid}
           />
@@ -169,8 +178,8 @@ export default function CreateSimulation({
           <ServersForm
             items={servers}
             onAdd={(item) => setServers((prev) => [...prev, item])}
-            onRemove={(i: number) =>
-              setServers(servers.filter((_, idx) => idx !== i))
+            onRemove={(i) =>
+              setServers((prev) => prev.filter((_, idx) => idx !== i))
             }
             onValidChange={handleServersValid}
           />
@@ -184,7 +193,7 @@ export default function CreateSimulation({
             }
             disabled={!canSubmit}
           >
-            Save Simulation
+            {initialData ? "Save Changes" : "Save Simulation"}
           </IonButton>
           {!canSubmit && (
             <IonText color="medium">

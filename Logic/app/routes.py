@@ -160,30 +160,35 @@ def init_routes(app, mongo):
     def update_simulation(sim_id):
         update_data = request.get_json() or {}
 
+        if not update_data:
+            abort(400, description="No valid fields to update")
+
         # Ensure user owns the simulation
         user_id = get_jwt_identity()
         user = mongo.find_user_by_id(user_id)
         if not user or sim_id not in (user.get("simulations_id") or []):
             abort(403, description="Not authorized to modify this simulation")
 
-        if not update_data:
-            abort(400, description="No valid fields to update")
-
-
-        sanitized_data["status"] = "Saved"
-        sanitized_data["result"] = None
-        sanitized_data["logs"] = None
+        # Ensure status-related fields are reset
+        update_data["status"] = "Saved"
+        update_data["result"] = None
+        update_data["logs"] = None
 
         # Apply update
         modified_count = mongo.update_simulation(sim_id, update_data)
         if modified_count == 0:
             abort(404, description="Simulation not found or no changes applied")
 
+        # Get and sanitize updated simulation
         updated_sim = mongo.get_simulation(sim_id)
-        if '_id' in simulation:
-            simulation['id'] = str(simulation['_id'])
-            del simulation['_id']
+        if not updated_sim:
+            abort(404, description="Simulation not found after update")
+
+        updated_sim["id"] = str(updated_sim["_id"])
+        del updated_sim["_id"]
+
         return jsonify(updated_sim), 200
+
 
     @api.route('/simulations/<sim_id>', methods=['DELETE'])
     @jwt_required()
