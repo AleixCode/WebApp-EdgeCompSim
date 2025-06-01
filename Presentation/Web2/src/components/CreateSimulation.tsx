@@ -221,7 +221,7 @@ export default function CreateSimulation({
                       {Object.entries(initialData.results || {}).map(
                         ([key, value]) => (
                           <p key={key}>
-                            <strong>{capitalize(key)}:</strong> {value}
+                            <strong>{capitalize(key)}:</strong> {String(value)}
                           </p>
                         )
                       )}
