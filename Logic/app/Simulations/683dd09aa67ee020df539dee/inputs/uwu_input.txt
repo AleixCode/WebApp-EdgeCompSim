@@ -1,0 +1,6 @@
+100 1 0 1 1
+map_bcn.json Eixample
+3 12 4 M
+None
+0 100 1
+34 2 2 1

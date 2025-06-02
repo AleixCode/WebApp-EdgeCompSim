@@ -128,7 +128,7 @@ export default function ServersForm({
 
           {/* CPU */}
           <IonItem>
-            <IonLabel position="stacked">CPU</IonLabel>
+            <IonLabel position="stacked">CPU (MIPS)</IonLabel>
             <IonInput
               type="number"
               value={srv.cpu}
@@ -144,7 +144,7 @@ export default function ServersForm({
 
           {/* Memory */}
           <IonItem>
-            <IonLabel position="stacked">Memory</IonLabel>
+            <IonLabel position="stacked">Memory (Mbytes)</IonLabel>
             <IonInput
               type="number"
               value={srv.mem}
@@ -160,7 +160,7 @@ export default function ServersForm({
 
           {/* HDD */}
           <IonItem>
-            <IonLabel position="stacked">HDD</IonLabel>
+            <IonLabel position="stacked">HDD (Mbytes)</IonLabel>
             <IonInput
               type="number"
               value={srv.hdd}

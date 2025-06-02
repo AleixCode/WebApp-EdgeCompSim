@@ -1,0 +1,27 @@
+/* Give the header a vibrant gradient background with white text */
+
+/* Set subtle background for the nav content */
+.nav-content {
+  background-color: #f7f7f7;
+}
+
+/* Spacing and hover effects for each nav item */
+.nav-item {
+  margin: 8px;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Increase the font size for the main title in the nav header */
+.nav-header ion-title {
+  font-size: 1.5rem; /* Adjust as desired */
+}
+
+/* Increase the font size for the labels in nav items */
+.nav-item ion-label {
+  font-size: 1.2rem; /* Adjust as desired */
+}

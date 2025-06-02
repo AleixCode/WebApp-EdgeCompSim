@@ -1,4 +1,3 @@
-// src/components/Nav.tsx
 import React from "react";
 import { useAuth } from "../contexts/AuthContext";
 import routes from "../config/routes";
@@ -24,6 +23,8 @@ import {
   logOutOutline,
 } from "ionicons/icons";
 
+import "./Nav.css"; // Import our custom styles
+
 // Map route names to icons for visual polish
 const iconMap: { [key: string]: string } = {
   Home: homeOutline,
@@ -36,14 +37,12 @@ const Nav: React.FC = () => {
 
   return (
     <IonMenu contentId="main-content">
-      {" "}
-      {/* Tied to IonSplitPane and IonRouterOutlet below */}
-      <IonHeader>
+      <IonHeader className="nav-header">
         <IonToolbar>
           <IonTitle>My App</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
+      <IonContent className="nav-content">
         <IonList>
           {routes
             .filter(
@@ -58,6 +57,7 @@ const Nav: React.FC = () => {
                   routerDirection="none"
                   lines="none"
                   detail={false}
+                  className="nav-item"
                 >
                   <IonIcon slot="start" icon={iconMap[r.name] || homeOutline} />
                   <IonLabel>{r.name}</IonLabel>
@@ -66,7 +66,13 @@ const Nav: React.FC = () => {
             ))}
           {isAuthenticated && (
             <IonMenuToggle autoHide={false}>
-              <IonItem button onClick={logout} lines="none" detail={false}>
+              <IonItem
+                button
+                onClick={logout}
+                lines="none"
+                detail={false}
+                className="nav-item"
+              >
                 <IonIcon slot="start" icon={logOutOutline} />
                 <IonLabel>Logout</IonLabel>
               </IonItem>

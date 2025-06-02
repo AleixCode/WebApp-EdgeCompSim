@@ -146,7 +146,7 @@ export default function GeneralForm({
 
       {/* Time to simulate */}
       <IonItem>
-        <IonLabel position="stacked">Time to simulate</IonLabel>
+        <IonLabel position="stacked">Time to simulate (m)</IonLabel>
         <IonInput
           type="number"
           value={localTime}
@@ -160,7 +160,7 @@ export default function GeneralForm({
 
       {/* Real execution time */}
       <IonItem>
-        <IonLabel position="stacked">Real execution time</IonLabel>
+        <IonLabel position="stacked">Limit execution time (m)</IonLabel>
         <IonInput
           type="number"
           value={localExecTime}
@@ -210,9 +210,9 @@ export default function GeneralForm({
           onIonChange={(e) => onChange("type_placement", e.detail.value!)}
           disabled={readOnly}
         >
-          <IonSelectOption value={0}>Bin Packing</IonSelectOption>
-          <IonSelectOption value={1}>Spread</IonSelectOption>
-          <IonSelectOption value={2}>Load Aware</IonSelectOption>
+          <IonSelectOption value={0}>Random</IonSelectOption>
+          <IonSelectOption value={1}>Nearest Server</IonSelectOption>
+          <IonSelectOption value={2}>K Nearest Server</IonSelectOption>
         </IonSelect>
       </IonItem>
     </IonList>

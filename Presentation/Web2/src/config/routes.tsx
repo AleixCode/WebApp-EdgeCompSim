@@ -25,22 +25,6 @@ const routes: AppRoute[] = [
     isNoAuthNav: true,
   },
   {
-    path: "/about",
-    component: About,
-    name: "About",
-    isAuth: false,
-    isAuthNav: true,
-    isNoAuthNav: true,
-  },
-  {
-    path: "/contact",
-    component: Contact,
-    name: "Contact",
-    isAuth: false,
-    isAuthNav: true,
-    isNoAuthNav: true,
-  },
-  {
     path: "/simulations",
     component: Simulations,
     name: "Simulations",
@@ -59,7 +43,7 @@ const routes: AppRoute[] = [
   {
     path: "/login",
     component: Login,
-    name: "Login",
+    name: "Login / Sign Up",
     isAuth: false,
     isAuthNav: false,
     isNoAuthNav: true,

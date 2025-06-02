@@ -1,5 +1,11 @@
-import React from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/react';
+import React from "react";
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+} from "@ionic/react";
 
 interface LayoutProps {
   title: string;
@@ -10,11 +16,11 @@ const Layout: React.FC<LayoutProps> = ({ title, children }) => (
   <IonPage>
     <IonHeader>
       <IonToolbar>
-        <IonTitle>{title}</IonTitle>
+        <IonTitle color="primary">{title}</IonTitle>
       </IonToolbar>
     </IonHeader>
     <IonContent fullscreen>
-      <div style={{ padding: '16px' }}>{children}</div>
+      <div style={{ padding: "16px" }}>{children}</div>
     </IonContent>
   </IonPage>
 );

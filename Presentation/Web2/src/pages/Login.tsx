@@ -73,7 +73,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Layout title="Login">
+    <Layout title="Login / Sign Up">
       <IonCard
         style={{
           width: "90%",
@@ -99,7 +99,7 @@ const Login: React.FC = () => {
         {segment === "logIn" ? (
           <form onSubmit={onLogin} style={{ marginTop: "16px" }}>
             <h2 style={{ textAlign: "center", marginBottom: "16px" }}>Login</h2>
-            <IonItem lines="none" style={{ "--background": "transparent" }}>
+            <IonItem>
               <IonLabel position="stacked">Email</IonLabel>
               <IonInput
                 value={loginEmail}
@@ -108,7 +108,7 @@ const Login: React.FC = () => {
                 required
               />
             </IonItem>
-            <IonItem lines="none" style={{ "--background": "transparent" }}>
+            <IonItem>
               <IonLabel position="stacked">Password</IonLabel>
               <IonInput
                 type="password"

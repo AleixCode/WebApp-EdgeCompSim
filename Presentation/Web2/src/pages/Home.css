@@ -1,0 +1,22 @@
+/* Ensure the grid takes full height and add internal padding */
+.home-grid {
+  height: 100%;
+  padding: 16px;
+}
+
+/* Indicator for full height behind the header */
+.full-height {
+  height: calc(100vh - 56px); /* Adjust if your header height is different */
+}
+
+/* Style the home card with gentle shadows and rounded corners */
+.home-card {
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Emphasize buttons with bold text */
+.home-btn {
+  font-weight: bold;
+}

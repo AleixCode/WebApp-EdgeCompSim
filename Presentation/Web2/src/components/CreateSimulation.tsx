@@ -157,7 +157,7 @@ export default function CreateSimulation({
                 {validTabs.servers && <IonIcon icon={checkmarkCircleOutline} />}
               </IonLabel>
             </IonSegmentButton>
-            {readOnly && (
+            {readOnly && initialData?.logs && (
               <IonSegmentButton value="results">
                 <IonLabel>Results</IonLabel>
               </IonSegmentButton>
@@ -208,7 +208,7 @@ export default function CreateSimulation({
             readOnly={readOnly}
           />
         )}
-        {tab === "results" && readOnly && (
+        {tab === "results" && readOnly && initialData?.logs && (
           <div style={{ padding: "16px" }}>
             <h2>Simulation Results</h2>
             {initialData?.results || initialData?.logs ? (
@@ -274,17 +274,17 @@ export default function CreateSimulation({
                   }}
                 >
                   <img
-                    src={`http://localhost:5000/api/download?filename=real_jobs_.png&sim_id=${simId}`}
+                    src={`http://localhost:5000/api/download?filename=${formData.name}_jobs_.png&sim_id=${simId}`}
                     alt="Jobs Chart"
                     style={{ maxWidth: "100%", height: "auto" }}
                   />
                   <img
-                    src={`http://localhost:5000/api/download?filename=real_servers_levels.png&sim_id=${simId}`}
+                    src={`http://localhost:5000/api/download?filename=${formData.name}_servers_levels.png&sim_id=${simId}`}
                     alt="Servers Levels Chart"
                     style={{ maxWidth: "100%", height: "auto" }}
                   />
                   <img
-                    src={`http://localhost:5000/api/download?filename=real_servers_on.png&sim_id=${simId}`}
+                    src={`http://localhost:5000/api/download?filename=${formData.name}_servers_on.png&sim_id=${simId}`}
                     alt="Servers On Chart"
                     style={{ maxWidth: "100%", height: "auto" }}
                   />

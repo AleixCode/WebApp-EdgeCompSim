@@ -154,7 +154,7 @@ export default function JobDistributionsForm({
           </IonListHeader>
 
           <IonItem>
-            <IonLabel position="stacked">Initial Time</IonLabel>
+            <IonLabel position="stacked">Initial Time (m)</IonLabel>
             <IonInput
               disabled={readOnly}
               type="number"
@@ -170,7 +170,7 @@ export default function JobDistributionsForm({
 
           {/* Input for Final Time */}
           <IonItem>
-            <IonLabel position="stacked">Final Time</IonLabel>
+            <IonLabel position="stacked">Final Time (m)</IonLabel>
             <IonInput
               disabled={readOnly}
               type="number"
