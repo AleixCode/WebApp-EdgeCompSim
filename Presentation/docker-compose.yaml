@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  ionic-react:
+    build: .
+    ports:
+      - "80:80"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge

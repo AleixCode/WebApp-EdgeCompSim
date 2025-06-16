@@ -1,0 +1,6 @@
+100 1 0 1 1
+map_bcn.json Eixample
+1234 323 3 L
+None
+0 100 2
+3 9 2 1

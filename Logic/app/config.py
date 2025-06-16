@@ -7,7 +7,7 @@ class Config:
     CELERY_BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
     # Frontend URI
-    FRONTEND_URI = 'http://127.0.0.1:8100/api'
+    FRONTEND_URI = 'http://127.0.0.1:80/api'
     BACKEND_URI = 'http://127.0.0.1:5000/api'
     # JWT
     JWT_SECRET_KEY = secrets.token_hex(32)       # used to sign JWTs:contentReference[oaicite:2]{index=2}
